@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-02-05
+
+### Changed
+
+- **Enterprise-safe installer** - Complete rewrite of `install.sh`
+  - Verifies prerequisites (PHP 8.2+, Laravel 11/12, Filament 3+, Node 18+)
+  - Does NOT create users or modify permissions
+  - Does NOT make security decisions
+  - All access control delegated to plugin UI
+  - Configures gateway JWT and working directory automatically
+  - License key prompt (optional, required for production)
+  - Clear post-installation instructions
+
+### Fixed
+
+- Gateway `DEFAULT_CWD` now set to Laravel project directory (fixes PTY exit on macOS)
+- AuditService graceful fallback when `shell-gate-audit` log channel not configured
+
+### Security
+
+- Installer no longer modifies user permissions or grants terminal access
+- Access control now fully managed via plugin UI (no implicit super-admin access)
+
 ## [1.1.0] - 2026-02-05
 
 ### Added
