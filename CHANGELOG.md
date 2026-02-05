@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-02-05
+
+### Added
+
+- **License verification via Anystack API**
+  - Runtime license validation on terminal access
+  - Automatic license activation for new domains
+  - 24-hour caching for valid licenses (reduces API calls)
+  - Graceful degradation when API is unavailable
+  - License verification skipped in local/testing environments
+- New `LicenseService` for Anystack API integration
+- New Artisan command: `php artisan shell-gate:license`
+  - Check license status
+  - `--refresh` flag to force re-validation
+- License configuration in `config/shell-gate.php`
+- Updated `install.sh` with license key prompt
+
+### Changed
+
+- Middleware `EnsureTerminalAccess` now checks license validity before user authorization
+- Configuration structure: `license_key` moved to `license.key`
+
+### Security
+
+- License validation prevents unauthorized production use
+- API credentials embedded securely (not exposed to end users)
+
 ## [1.0.0] - 2026-02-01
 
 ### Added

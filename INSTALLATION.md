@@ -13,8 +13,9 @@ Complete installation guide for Shell Gate, covering all deployment scenarios.
 5. [Gateway Setup](#gateway-setup)
 6. [Nginx Configuration](#nginx-configuration)
 7. [Docker Deployment](#docker-deployment)
-8. [Verification](#verification)
-9. [Troubleshooting](#troubleshooting)
+8. [License Verification](#license-verification) — **important for production**
+9. [Verification](#verification)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -247,16 +248,62 @@ Without this cast, the attribute may return `1` (integer) instead of `true` (boo
 Add to your `.env` file:
 
 ```env
-# Terminal Gateway URL (adjust for your setup)
+# =============================================================================
+# Shell Gate License (required for production)
+# =============================================================================
+
+# Your license key (from purchase confirmation email)
+SHELL_GATE_LICENSE_KEY=your-license-key-here
+
+# Anystack runtime API key (from installation docs below)
+# This key has minimal permissions (validate/activate only) - safe to use
+ANYSTACK_CUSTOMER_API_KEY=8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J
+
+# =============================================================================
+# Terminal Gateway
+# =============================================================================
+# Gateway URL (adjust for your setup - use wss:// in production)
 SHELL_GATE_GATEWAY_URL=wss://yourdomain.com/ws/terminal
+
+# Gateway host/port (for local gateway process)
+SHELL_GATE_GATEWAY_HOST=127.0.0.1
+SHELL_GATE_GATEWAY_PORT=7681
 
 # JWT secret (uses APP_KEY by default, can override)
 # SHELL_GATE_JWT_SECRET=your-secret-key
-
-# Gateway settings
-SHELL_GATE_GATEWAY_HOST=127.0.0.1
-SHELL_GATE_GATEWAY_PORT=7681
 ```
+
+#### License Keys Explained
+
+Shell Gate requires **two keys** for license verification:
+
+| Key | Purpose | Source |
+|-----|---------|--------|
+| `SHELL_GATE_LICENSE_KEY` | Your unique license | Purchase confirmation email |
+| `ANYSTACK_CUSTOMER_API_KEY` | Runtime verification | Copy from above (same for all customers) |
+
+**Security note:** The `ANYSTACK_CUSTOMER_API_KEY` has minimal permissions (validate and activate licenses only). It cannot create, modify, or delete licenses. It's safe to include in your application.
+
+#### License Verification
+
+Shell Gate uses **Anystack** for license verification:
+
+- **Runtime verification**: License is checked when accessing the terminal
+- **Auto-activation**: New domains are automatically activated on first access
+- **Cached results**: Valid licenses are cached for 24 hours
+- **Graceful degradation**: If Anystack is temporarily unavailable, access continues
+- **Development mode**: Verification is skipped in `local` and `testing` environments
+
+**License statuses:**
+| Status | Description |
+|--------|-------------|
+| `valid` | License is active and valid |
+| `activated` | License just activated for this domain |
+| `expired` | License has expired (renew at octadecimal.engineering) |
+| `suspended` | License was suspended (contact support) |
+| `activation_limit` | Maximum domains reached (upgrade license) |
+| `missing_key` | No `SHELL_GATE_LICENSE_KEY` configured |
+| `missing_api_key` | No `ANYSTACK_CUSTOMER_API_KEY` configured |
 
 ### Step 5: Register Plugin
 
@@ -639,6 +686,93 @@ EXPOSE 7681
 
 CMD ["node", "index.js"]
 ```
+
+---
+
+## License Verification
+
+Shell Gate uses **Anystack** for license verification. Your license is validated at runtime when accessing the terminal.
+
+### How It Works
+
+1. **First Access**: When you access the terminal for the first time on a domain, Shell Gate activates your license for that domain
+2. **Subsequent Access**: License is validated against Anystack API (cached for 24 hours)
+3. **Development**: Verification is automatically skipped in `local` and `testing` environments
+
+### Configuration
+
+Add both keys to your `.env`:
+
+```env
+# Your license key (from purchase confirmation)
+SHELL_GATE_LICENSE_KEY=your-license-key-here
+
+# Anystack runtime API key (copy exactly as shown)
+ANYSTACK_CUSTOMER_API_KEY=8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J
+```
+
+The `ANYSTACK_CUSTOMER_API_KEY` is the same for all Shell Gate customers and has minimal permissions (validate/activate only).
+
+### Check License Status
+
+Use the Artisan command to verify your license:
+
+```bash
+# Check current license status
+php artisan shell-gate:license
+
+# Force re-validation (clear cache)
+php artisan shell-gate:license --refresh
+```
+
+Example output:
+```
+Checking license status...
+
+  Status: ✓ valid
+  Message: License is valid and activated
+  Cached: Yes
+
+Configuration:
+  License key: ***fa825162
+  Verification: Enabled
+  Environment: production
+```
+
+### License Statuses
+
+| Status | Description | Action |
+|--------|-------------|--------|
+| `valid` | License is active | None required |
+| `activated` | License just activated for this domain | None required |
+| `expired` | License has expired | Renew at octadecimal.engineering |
+| `suspended` | License was suspended | Contact support |
+| `activation_limit` | Max domains reached | Upgrade license or deactivate another domain |
+| `missing_key` | No license key in .env | Add `SHELL_GATE_LICENSE_KEY` |
+| `missing_api_key` | No API key in .env | Add `ANYSTACK_CUSTOMER_API_KEY` |
+| `offline` | Cannot reach Anystack API | Access continues (graceful degradation) |
+
+### Development Mode
+
+License verification is **automatically skipped** when:
+- `APP_ENV=local`
+- `APP_ENV=testing`
+
+You can also disable verification explicitly:
+
+```env
+SHELL_GATE_LICENSE_VERIFY=false
+```
+
+### Purchasing a License
+
+Visit [octadecimal.engineering/shell-gate](https://octadecimal.engineering/shell-gate) to purchase:
+
+| License | Domains | Price |
+|---------|---------|-------|
+| Single Site | 1 production | $99 |
+| Unlimited | Unlimited | $299 |
+| Agency | Unlimited (clients) | $499 |
 
 ---
 

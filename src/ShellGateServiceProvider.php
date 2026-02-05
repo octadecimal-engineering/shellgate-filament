@@ -39,6 +39,15 @@ class ShellGateServiceProvider extends ServiceProvider
                 config('shell-gate.audit.enabled', true)
             );
         });
+
+        $this->app->singleton(Services\LicenseService::class, function ($app) {
+            return new Services\LicenseService(
+                licenseKey: config('shell-gate.license.key'),
+                apiKey: config('shell-gate.license.anystack.api_key'),
+                productId: config('shell-gate.license.anystack.product_id'),
+                enabled: config('shell-gate.license.verify', true),
+            );
+        });
     }
 
     /**
@@ -54,6 +63,7 @@ class ShellGateServiceProvider extends ServiceProvider
             $this->registerPublishing();
             $this->commands([
                 Console\CloseSessionsCommand::class,
+                Console\LicenseStatusCommand::class,
             ]);
         }
     }

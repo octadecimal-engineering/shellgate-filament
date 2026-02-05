@@ -7,6 +7,7 @@ namespace Octadecimal\ShellGate\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Octadecimal\ShellGate\Services\AuditService;
+use Octadecimal\ShellGate\Services\LicenseService;
 use Octadecimal\ShellGate\ShellGatePlugin;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,6 +18,7 @@ class EnsureTerminalAccess
 {
     public function __construct(
         private readonly AuditService $auditService,
+        private readonly LicenseService $licenseService,
     ) {}
 
     /**
@@ -26,6 +28,18 @@ class EnsureTerminalAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Check license validity first
+        $licenseCheck = $this->licenseService->validate();
+        if (! $licenseCheck['valid']) {
+            $this->auditService->logSecurityEvent('license_invalid', [
+                'status' => $licenseCheck['status'],
+                'message' => $licenseCheck['message'],
+                'ip' => $request->ip(),
+            ]);
+
+            return $this->licenseError($request, $licenseCheck);
+        }
+
         // Check if user is authenticated
         if (! $request->user()) {
             return $this->unauthorized($request, 'Authentication required');
@@ -105,5 +119,27 @@ class EnsureTerminalAccess
         }
 
         abort(403, $message);
+    }
+
+    /**
+     * Return license error response.
+     *
+     * @param array{valid: bool, status: string, message: string} $licenseCheck
+     */
+    private function licenseError(Request $request, array $licenseCheck): Response
+    {
+        $status = $licenseCheck['status'];
+        $message = $licenseCheck['message'];
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'error' => 'License error',
+                'status' => $status,
+                'message' => $message,
+            ], 402); // 402 Payment Required
+        }
+
+        // For web requests, show a user-friendly error page
+        abort(402, "Shell Gate License Error: {$message}");
     }
 }
