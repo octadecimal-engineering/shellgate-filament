@@ -74,6 +74,19 @@ Shell Gate is a **standalone** product. It may be developed or tested inside ano
 
 ## Quick Start
 
+### Option: one-shot install script
+
+If the package is already installed (Composer path repo or private repo), you can run the install script from your **Laravel project root**:
+
+```bash
+bash vendor/octadecimal/shell-gate/install.sh
+# or, with path repo:  bash packages/octadecimal/shell-gate/install.sh
+```
+
+It publishes config, runs migrations, prepares the gateway `.env` and runs `npm install`. You still need to register the plugin and start the gateway — the script prints the exact next steps. See [INSTALLATION.md — Quick install via script](INSTALLATION.md#quick-install-via-script) for the full path.
+
+---
+
 ### 1. Install the Package
 
 Shell Gate is **not on Packagist**. Use one of these options:
