@@ -149,7 +149,7 @@ class ShellGatePlugin implements Plugin
      */
     public function getNavigationLabel(): string
     {
-        return $this->navigationLabel ?? config('shell-gate.filament.navigation_label', 'Terminal');
+        return $this->navigationLabel ?? config('shell-gate.filament.navigation_label', 'ShellGate');
     }
 
     /**

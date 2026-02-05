@@ -167,8 +167,8 @@ return [
         // Navigation group (null = no grouping)
         'navigation_group' => env('SHELL_GATE_NAV_GROUP', 'System'),
 
-        // Navigation label
-        'navigation_label' => env('SHELL_GATE_NAV_LABEL', 'Terminal'),
+        // Navigation label (shown in sidebar and as page title inside the terminal)
+        'navigation_label' => env('SHELL_GATE_NAV_LABEL', 'ShellGate'),
 
         // Navigation icon
         'navigation_icon' => 'heroicon-o-command-line',
