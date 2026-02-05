@@ -140,7 +140,7 @@ Then set `is_super_admin = true` for users who may access the terminal.
 ```bash
 # Using npm (development)
 cd vendor/octadecimal/shell-gate/gateway
-npm install
+npm install   # postinstall fixes PTY permissions on macOS (avoids "code 4006")
 npm start
 
 # Using Docker (production)
@@ -151,7 +151,7 @@ docker run -d \
   octadecimal/shell-gate-gateway
 ```
 
-### 5. Register Plugin
+### 5. Register Plugin and add Terminal to the sidebar
 
 ```php
 // app/Providers/Filament/AdminPanelProvider.php
@@ -165,9 +165,13 @@ public function panel(Panel $panel): Panel
         ->plugin(
             ShellGatePlugin::make()
                 ->authorize(fn () => auth()->user()?->is_super_admin)
+                ->navigationGroup('System')   // left sidebar group
+                ->navigationLabel('Terminal') // menu label
         );
 }
 ```
+
+The Terminal link appears in the admin **left sidebar** under the group you set (e.g. "System"). You can customize group, label, icon, and sort order; see [Installation → Adding the Terminal to the sidebar](INSTALLATION.md#adding-the-terminal-to-the-sidebar-left-menu).
 
 ### 6. Configure Nginx (Production)
 

@@ -209,6 +209,48 @@ class AdminPanelProvider extends PanelProvider
 }
 ```
 
+#### Adding the Terminal to the sidebar (left menu)
+
+Registering the plugin as above **automatically** adds a "Terminal" item to the Filament admin sidebar. The link appears under the **navigation group** and with the **label** you pass:
+
+- **`->navigationGroup('System')`** — Puts the item in the "System" group (collapse section in the sidebar). Use any group name you use elsewhere (e.g. `'Tools'`, `'Settings'`).
+- **`->navigationLabel('Terminal')`** — Text shown in the menu. Default is `'Terminal'` if omitted.
+
+You can also set **icon** and **sort order**:
+
+```php
+->plugin(
+    ShellGatePlugin::make()
+        ->authorize(fn () => auth()->user()?->is_super_admin)
+        ->navigationGroup('System')
+        ->navigationLabel('Terminal')
+        ->navigationIcon('heroicon-o-command-line')  // optional, default terminal icon
+        ->navigationSort(100)                         // optional, lower = higher in list
+);
+```
+
+**Via config / .env:** If you prefer not to hardcode in the provider, use `config/shell-gate.php` (after `php artisan vendor:publish --tag=shell-gate-config`) or environment variables:
+
+```env
+SHELL_GATE_NAV_GROUP=System
+SHELL_GATE_NAV_LABEL=Terminal
+SHELL_GATE_NAV_SORT=100
+```
+
+Then in the provider you can omit the fluent calls and the page will use config defaults.
+
+**Hide from sidebar:** To keep the terminal reachable only by direct URL (e.g. `/admin/terminal`) and not show it in the sidebar:
+
+```php
+->plugin(
+    ShellGatePlugin::make()
+        ->authorize(...)
+        ->hideFromNavigation()
+);
+```
+
+You can still add a custom link elsewhere (e.g. a Filament widget on the dashboard) that points to the terminal page route (e.g. `route('filament.admin.pages.terminal')` or your panel's equivalent).
+
 ### Step 6: Clear Caches
 
 ```bash
@@ -230,7 +272,7 @@ The Terminal Gateway is a Node.js process that manages PTY sessions.
 # Navigate to gateway directory
 cd vendor/octadecimal/shell-gate/gateway
 
-# Install dependencies
+# Install dependencies (postinstall fixes PTY permissions on macOS — see Troubleshooting)
 npm install
 
 # Start gateway
@@ -239,6 +281,8 @@ npm start
 # Or with custom port
 PORT=7681 JWT_SECRET=your-app-key npm start
 ```
+
+**macOS users:** After `npm install`, a postinstall script runs automatically and sets execute permission on `node-pty`'s `spawn-helper` binary. This prevents "Connection closed (code 4006)" / "posix_spawnp failed". If you use `npm ci --ignore-scripts` or copied the gateway without running `npm install`, run `npm install` once in the gateway directory so the fix is applied.
 
 ### Option B: Systemd Service (Production)
 
@@ -578,6 +622,31 @@ docker logs -f shell-gate-gateway
 ---
 
 ## Troubleshooting
+
+### Issue: "Connection closed (code 4006)" or "posix_spawnp failed" (macOS)
+
+**Symptoms:**
+- Terminal page connects briefly then shows "Connection closed (code 4006)"
+- Gateway logs show: `PTY spawn failed` / `posix_spawnp failed`
+
+**Cause:** On macOS, the `node-pty` dependency ships a native helper binary (`spawn-helper`) in `prebuilds/darwin-*/`. Some npm installs do not set the executable bit on this file, so the OS blocks execution and the PTY cannot be created.
+
+**Solution:**
+
+1. **Let postinstall fix it (recommended):** From the gateway directory run:
+   ```bash
+   cd vendor/octadecimal/shell-gate/gateway
+   npm install
+   ```
+   The package's `postinstall` script sets `chmod +x` on all `spawn-helper` binaries. Then restart the gateway (`npm start`).
+
+2. **Manual fix:** If you cannot run `npm install` (e.g. read-only deploy), set the bit by hand:
+   ```bash
+   chmod +x vendor/octadecimal/shell-gate/gateway/node_modules/node-pty/prebuilds/darwin-arm64/spawn-helper
+   # On Intel Mac use darwin-x64 instead of darwin-arm64
+   ```
+
+3. **Docker:** Not affected; the image builds with correct permissions.
 
 ### Issue: "Cannot redeclare static ... \$view as non static" (Filament 3)
 

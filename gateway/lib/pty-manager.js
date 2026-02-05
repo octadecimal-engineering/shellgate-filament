@@ -4,6 +4,7 @@
  * Manages pseudo-terminal sessions for connected clients.
  */
 
+import os from 'os';
 import pty from 'node-pty';
 import { logger } from './logger.js';
 
@@ -44,25 +45,43 @@ export class PtyManager {
     createSession(sessionId, ws, options = {}) {
         const {
             shell = this.#config.shell || '/bin/bash',
-            cwd = this.#config.defaultCwd || process.env.HOME,
+            cwd: optionCwd = this.#config.defaultCwd || process.env.HOME,
             cols = 120,
             rows = 30,
             userId = null,
         } = options;
 
-        // Create PTY
-        const ptyProcess = pty.spawn(shell, [], {
-            name: 'xterm-256color',
-            cols,
-            rows,
-            cwd,
-            env: {
-                ...process.env,
-                TERM: 'xterm-256color',
-                COLORTERM: 'truecolor',
-                LANG: 'en_US.UTF-8',
-            },
-        });
+        // Ensure cwd is always a valid string (posix_spawnp fails on undefined/invalid)
+        const cwd = optionCwd && String(optionCwd).trim() ? String(optionCwd) : (os.homedir() || process.cwd());
+
+        logger.info('Spawning PTY', { shell, cwd, cols, rows });
+
+        let ptyProcess;
+        try {
+            ptyProcess = pty.spawn(shell, [], {
+                name: 'xterm-256color',
+                cols,
+                rows,
+                cwd,
+                env: {
+                    ...process.env,
+                    TERM: 'xterm-256color',
+                    COLORTERM: 'truecolor',
+                    LANG: 'en_US.UTF-8',
+                },
+            });
+        } catch (err) {
+            logger.error('PTY spawn failed', {
+                message: err.message,
+                code: err.code,
+                errno: err.errno,
+                path: err.path,
+                shell,
+                cwd,
+                stack: err.stack,
+            });
+            throw err;
+        }
 
         // Forward PTY output to WebSocket
         ptyProcess.onData((data) => {

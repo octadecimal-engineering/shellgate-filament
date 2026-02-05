@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "postinstall": "node scripts/fix-spawn-helper.js"
   },
   "keywords": [
     "terminal",
@@ -17,6 +18,7 @@
   "author": "Octadecimal Engineering",
   "license": "proprietary",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
     "node-pty": "^1.0.0",
     "ws": "^8.18.0"
