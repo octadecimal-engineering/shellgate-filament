@@ -1,0 +1,26 @@
+Shell Gate
+Copyright (c) 2026 Octadecimal. All rights reserved.
+Proprietary — see LICENSE-COMMERCIAL.md.
+
+---
+
+This software includes the following third-party components:
+
+xterm.js
+Copyright (c) 2014-2024, The xterm.js authors
+License: MIT (https://opensource.org/licenses/MIT)
+
+node-pty
+Copyright (c) Microsoft Corporation
+License: MIT (https://opensource.org/licenses/MIT)
+
+Laravel
+Copyright (c) Taylor Otwell
+License: MIT (https://opensource.org/licenses/MIT)
+
+Filament
+Copyright (c) Filament contributors
+License: MIT (https://opensource.org/licenses/MIT)
+
+Use and distribution of Shell Gate are governed by LICENSE-COMMERCIAL.md.
+You must comply with the licenses of the above components when using them.

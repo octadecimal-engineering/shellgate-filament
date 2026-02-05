@@ -1,0 +1,711 @@
+# Installation Guide
+
+Complete installation guide for Shell Gate, covering all deployment scenarios.
+
+---
+
+## Table of Contents
+
+1. [Requirements](#requirements)
+2. [Quick Install](#quick-install)
+3. [Step-by-Step Installation](#step-by-step-installation)
+4. [Gateway Setup](#gateway-setup)
+5. [Nginx Configuration](#nginx-configuration)
+6. [Docker Deployment](#docker-deployment)
+7. [Verification](#verification)
+8. [Troubleshooting](#troubleshooting)
+
+---
+
+## Requirements
+
+### Server Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| PHP | 8.2 | 8.3+ |
+| Laravel | 11.28 | 12.x |
+| Filament | 5.0 | 5.x latest |
+| Livewire | 4.0 | 4.x latest |
+| Node.js | 18 | 20 LTS |
+| npm | 9 | 10+ |
+
+### PHP Extensions
+
+```bash
+# Required extensions
+php -m | grep -E "openssl|json|mbstring|tokenizer"
+```
+
+- `openssl` — JWT signing
+- `json` — API responses
+- `mbstring` — String handling
+- `tokenizer` — Laravel requirement
+
+### System Requirements
+
+```bash
+# For PTY support (Linux)
+apt-get install -y build-essential python3
+
+# For node-pty compilation
+npm install -g node-gyp
+```
+
+---
+
+## Quick Install
+
+For experienced users who want to get started quickly.
+
+**Note:** The package is **not on Packagist**. You must add a Composer repository first (path repository for local dev, or the private repo URL provided after purchase). Then:
+
+```bash
+# 1. Install package (after adding repo to composer.json)
+composer require octadecimal/shell-gate
+
+# 2. Publish and migrate
+php artisan vendor:publish --tag=shell-gate-config
+php artisan migrate
+
+# 3. Start gateway (development)
+cd vendor/octadecimal/shell-gate/gateway
+npm install && npm start
+
+# 4. Register plugin in AdminPanelProvider.php
+# ->plugin(ShellGatePlugin::make()->authorize(fn () => auth()->user()?->is_super_admin))
+
+# 5. Visit /admin/terminal
+```
+
+---
+
+## Step-by-Step Installation
+
+### Step 1: Add Composer Repository and Install Package
+
+Shell Gate is distributed outside Packagist (commercial / private). Add a repository in your application’s `composer.json`:
+
+**Path repository (local development, e.g. when testing inside a monorepo):**
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./packages/octadecimal/shell-gate"
+        }
+    ]
+}
+```
+
+**Private repository (after purchase):** use the repository URL and any auth details provided (e.g. Anystack, Satis, or private Packagist).
+
+Then install:
+
+```bash
+composer require octadecimal/shell-gate
+```
+
+For a specific version (when using a versioned private repo):
+
+```bash
+composer require octadecimal/shell-gate:^1.0
+```
+
+### Step 2: Publish Configuration
+
+```bash
+# Publish config file
+php artisan vendor:publish --tag=shell-gate-config
+
+# Publish views (optional, for customization)
+php artisan vendor:publish --tag=shell-gate-views
+
+# Publish assets (optional, if you build your own)
+php artisan vendor:publish --tag=shell-gate-assets
+```
+
+This creates:
+- `config/shell-gate.php` — Main configuration
+- `resources/views/vendor/shell-gate/` — Blade templates (if published)
+- `public/vendor/shell-gate/` — Assets (if published)
+
+### Step 3: Run Migrations
+
+```bash
+php artisan migrate
+```
+
+Creates the `terminal_sessions` table for audit logging.
+
+### Step 4: Configure Environment
+
+Add to your `.env` file:
+
+```env
+# Terminal Gateway URL (adjust for your setup)
+SHELL_GATE_GATEWAY_URL=wss://yourdomain.com/ws/terminal
+
+# JWT secret (uses APP_KEY by default, can override)
+# SHELL_GATE_JWT_SECRET=your-secret-key
+
+# Gateway settings
+SHELL_GATE_GATEWAY_HOST=127.0.0.1
+SHELL_GATE_GATEWAY_PORT=7681
+```
+
+### Step 5: Register Plugin
+
+Edit `app/Providers/Filament/AdminPanelProvider.php`:
+
+```php
+<?php
+
+namespace App\Providers\Filament;
+
+use Filament\Panel;
+use Filament\PanelProvider;
+use Octadecimal\ShellGate\ShellGatePlugin;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->default()
+            ->id('admin')
+            // ... other configuration
+            ->plugin(
+                ShellGatePlugin::make()
+                    ->authorize(fn () => auth()->user()?->is_super_admin)
+                    ->navigationGroup('System')
+                    ->navigationLabel('Terminal')
+            );
+    }
+}
+```
+
+### Step 6: Clear Caches
+
+```bash
+php artisan config:clear
+php artisan view:clear
+php artisan route:clear
+php artisan filament:clear-cached-components
+```
+
+---
+
+## Gateway Setup
+
+The Terminal Gateway is a Node.js process that manages PTY sessions.
+
+### Option A: Local Development
+
+```bash
+# Navigate to gateway directory
+cd vendor/octadecimal/shell-gate/gateway
+
+# Install dependencies
+npm install
+
+# Start gateway
+npm start
+
+# Or with custom port
+PORT=7681 JWT_SECRET=your-app-key npm start
+```
+
+### Option B: Systemd Service (Production)
+
+Create `/etc/systemd/system/shell-gate-gateway.service`:
+
+```ini
+[Unit]
+Description=Web Terminal Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/app/vendor/octadecimal/shell-gate/gateway
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=10
+
+Environment=NODE_ENV=production
+Environment=PORT=7681
+Environment=JWT_SECRET=your-laravel-app-key
+Environment=ALLOWED_ORIGINS=https://yourdomain.com
+Environment=TERMINAL_CWD=/var/www/app
+Environment=TERMINAL_USER=terminal-user
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable shell-gate-gateway
+sudo systemctl start shell-gate-gateway
+sudo systemctl status shell-gate-gateway
+```
+
+### Option C: PM2 Process Manager
+
+```bash
+# Install PM2 globally
+npm install -g pm2
+
+# Start gateway with PM2
+cd vendor/octadecimal/shell-gate/gateway
+pm2 start index.js --name shell-gate-gateway
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 startup script
+pm2 startup
+```
+
+### Option D: Docker
+
+See [Docker Deployment](#docker-deployment) section below.
+
+---
+
+## Nginx Configuration
+
+### Basic WebSocket Proxy
+
+Add to your Nginx server block:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    # SSL certificates
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+
+    # ... your existing Laravel configuration ...
+
+    # WebSocket proxy for terminal
+    location /ws/terminal {
+        proxy_pass http://127.0.0.1:7681;
+        proxy_http_version 1.1;
+        
+        # WebSocket upgrade headers
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        
+        # Pass client info
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Long timeouts for persistent connections
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        
+        # Disable buffering for real-time
+        proxy_buffering off;
+    }
+}
+```
+
+### Full Example Configuration
+
+```nginx
+# /etc/nginx/sites-available/yourdomain.com
+
+upstream terminal_gateway {
+    server 127.0.0.1:7681;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    root /var/www/app/public;
+    index index.php;
+
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=63072000" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+    # Laravel Application
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Terminal WebSocket
+    location /ws/terminal {
+        proxy_pass http://terminal_gateway;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_buffering off;
+        proxy_cache off;
+    }
+
+    # Deny access to sensitive files
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+Test and reload Nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+---
+
+## Docker Deployment
+
+### Using Docker Compose
+
+Create `docker-compose.terminal.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  terminal-gateway:
+    build:
+      context: ./vendor/octadecimal/shell-gate/gateway
+      dockerfile: Dockerfile
+    container_name: shell-gate-gateway
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7681:7681"
+    environment:
+      - NODE_ENV=production
+      - PORT=7681
+      - JWT_SECRET=${APP_KEY}
+      - ALLOWED_ORIGINS=${APP_URL}
+      - TERMINAL_CWD=/app
+    volumes:
+      - ./:/app:ro  # Mount app directory read-only
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7681/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  app-network:
+    external: true
+```
+
+Start with:
+
+```bash
+docker-compose -f docker-compose.terminal.yml up -d
+```
+
+### Standalone Docker
+
+```bash
+# Build image
+docker build -t octadecimal/shell-gate-gateway \
+  vendor/octadecimal/shell-gate/gateway
+
+# Run container
+docker run -d \
+  --name shell-gate-gateway \
+  --restart unless-stopped \
+  -p 127.0.0.1:7681:7681 \
+  -e JWT_SECRET="your-app-key" \
+  -e ALLOWED_ORIGINS="https://yourdomain.com" \
+  -e TERMINAL_CWD="/app" \
+  -v $(pwd):/app:ro \
+  octadecimal/shell-gate-gateway
+```
+
+### Gateway Dockerfile
+
+```dockerfile
+# vendor/octadecimal/shell-gate/gateway/Dockerfile
+FROM node:20-alpine
+
+WORKDIR /gateway
+
+# Install build dependencies for node-pty
+RUN apk add --no-cache python3 make g++ bash
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source
+COPY . .
+
+# Create non-root user
+RUN adduser -D gateway
+USER gateway
+
+EXPOSE 7681
+
+CMD ["node", "index.js"]
+```
+
+---
+
+## Verification
+
+### Step 1: Check Gateway Status
+
+```bash
+# If using systemd
+sudo systemctl status shell-gate-gateway
+
+# If using PM2
+pm2 status
+
+# If using Docker
+docker ps | grep terminal
+
+# Check if port is listening
+netstat -tlnp | grep 7681
+# or
+ss -tlnp | grep 7681
+```
+
+### Step 2: Test WebSocket Connection
+
+```bash
+# Install wscat
+npm install -g wscat
+
+# Test connection (replace with your token)
+wscat -c "wss://yourdomain.com/ws/terminal?token=TEST"
+
+# Should see connection error for invalid token (expected)
+# error: Unexpected server response: 401
+```
+
+### Step 3: Test from Browser
+
+1. Log in to Filament admin panel
+2. Navigate to **System > Terminal**
+3. You should see the terminal interface
+4. Type `whoami` and press Enter
+5. Verify the response
+
+### Step 4: Check Logs
+
+```bash
+# Laravel logs
+tail -f storage/logs/laravel.log
+
+# Terminal audit logs
+tail -f storage/logs/terminal-audit.log
+
+# Gateway logs (if using PM2)
+pm2 logs shell-gate-gateway
+
+# Gateway logs (if using Docker)
+docker logs -f shell-gate-gateway
+```
+
+---
+
+## Troubleshooting
+
+### Issue: "WebSocket connection failed"
+
+**Symptoms:**
+- Terminal page loads but shows "Connection failed"
+- Browser console shows WebSocket error
+
+**Solutions:**
+
+1. **Check gateway is running:**
+   ```bash
+   curl http://127.0.0.1:7681/health
+   ```
+
+2. **Check Nginx WebSocket config:**
+   ```bash
+   sudo nginx -t
+   grep -A 10 "ws/terminal" /etc/nginx/sites-available/yourdomain.com
+   ```
+
+3. **Verify wss:// URL in .env:**
+   ```env
+   SHELL_GATE_GATEWAY_URL=wss://yourdomain.com/ws/terminal
+   ```
+
+4. **Check firewall:**
+   ```bash
+   sudo ufw status
+   # Port 7681 should NOT be open publicly (Nginx proxies it)
+   ```
+
+### Issue: "Invalid token" or "Token expired"
+
+**Symptoms:**
+- WebSocket connects but immediately closes with 4001/4002
+
+**Solutions:**
+
+1. **Verify JWT_SECRET matches APP_KEY:**
+   ```bash
+   # In .env
+   APP_KEY=base64:xxxxx
+   
+   # Gateway should use same key
+   JWT_SECRET=base64:xxxxx
+   ```
+
+2. **Check server time synchronization:**
+   ```bash
+   timedatectl status
+   # Ensure NTP is active
+   ```
+
+3. **Increase token TTL temporarily for debugging:**
+   ```php
+   // config/shell-gate.php
+   'token_ttl' => 600, // 10 minutes
+   ```
+
+### Issue: "Permission denied" when executing commands
+
+**Symptoms:**
+- Terminal connects but commands fail with permission errors
+
+**Solutions:**
+
+1. **Check terminal user permissions:**
+   ```bash
+   # See which user the gateway runs as
+   ps aux | grep node
+   
+   # Verify user can access app directory
+   sudo -u www-data ls -la /var/www/app
+   ```
+
+2. **Verify TERMINAL_CWD setting:**
+   ```bash
+   # In gateway environment
+   TERMINAL_CWD=/var/www/app
+   ```
+
+### Issue: Gateway crashes or restarts
+
+**Symptoms:**
+- Terminal disconnects randomly
+- Gateway logs show errors
+
+**Solutions:**
+
+1. **Check Node.js memory:**
+   ```bash
+   # Increase memory limit
+   NODE_OPTIONS="--max-old-space-size=512" node index.js
+   ```
+
+2. **Check for unhandled exceptions:**
+   ```bash
+   # View full logs
+   pm2 logs shell-gate-gateway --lines 100
+   ```
+
+3. **Update node-pty:**
+   ```bash
+   cd vendor/octadecimal/shell-gate/gateway
+   npm update node-pty
+   npm rebuild
+   ```
+
+### Issue: Terminal is slow or laggy
+
+**Symptoms:**
+- Noticeable delay between keypress and response
+- Choppy output
+
+**Solutions:**
+
+1. **Check network latency:**
+   ```bash
+   ping yourdomain.com
+   ```
+
+2. **Disable WebGL addon if issues:**
+   ```javascript
+   // In terminal configuration
+   'use_webgl' => false,
+   ```
+
+3. **Check server load:**
+   ```bash
+   top
+   htop
+   ```
+
+### Getting Help
+
+If you've tried the above and still have issues:
+
+1. **Check GitHub Issues:** Look for similar problems
+2. **Collect diagnostics:**
+   ```bash
+   php artisan about
+   node --version
+   npm --version
+   cat /etc/os-release
+   ```
+3. **Open support ticket:** support@octadecimal.engineering (license holders)
+
+---
+
+## Next Steps
+
+- [Configuration Guide](CONFIGURATION.md) — Customize terminal behavior
+- [Security Guide](SECURITY.md) — Harden your installation
+- [API Reference](API.md) — Integrate with other systems

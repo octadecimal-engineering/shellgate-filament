@@ -1,0 +1,11 @@
+Copyright (c) 2026 Octadecimal. All rights reserved.
+
+This software is proprietary. Use, distribution, and modification are
+governed by the Commercial License Agreement in LICENSE-COMMERCIAL.md.
+
+Unauthorized copying, modification, or distribution of this software
+is strictly prohibited.
+
+Third-party components (xterm.js, node-pty, Laravel, Filament) are
+used under their respective MIT licenses. See NOTICE or
+LICENSE-COMMERCIAL.md §5.2 for details.
