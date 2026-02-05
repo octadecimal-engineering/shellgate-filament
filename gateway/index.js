@@ -5,6 +5,7 @@
  * Validates JWT tokens and manages terminal sessions.
  */
 
+import 'dotenv/config';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { verifyToken } from './lib/jwt.js';
