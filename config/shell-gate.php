@@ -5,6 +5,43 @@ declare(strict_types=1);
 return [
     /*
     |--------------------------------------------------------------------------
+    | License Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Shell Gate uses Anystack for license verification.
+    |
+    | REQUIRED for production:
+    | 1. SHELL_GATE_LICENSE_KEY - Your license key (from purchase confirmation)
+    | 2. ANYSTACK_CUSTOMER_API_KEY - Runtime API key (from octadecimal.engineering docs)
+    |
+    | The runtime API key has minimal permissions (validate/activate only)
+    | and is safe to use in your application.
+    |
+    | Purchase: https://octadecimal.engineering/shell-gate
+    | License types: Single Site ($99), Unlimited ($299), Agency ($499)
+    |
+    */
+    'license' => [
+        // Your license key from purchase confirmation (required for production)
+        'key' => env('SHELL_GATE_LICENSE_KEY'),
+
+        // Enable/disable license verification (auto-disabled in local/testing)
+        'verify' => env('SHELL_GATE_LICENSE_VERIFY', true),
+
+        // Anystack runtime API configuration
+        // The customer API key is provided in installation docs (minimal permissions)
+        'anystack' => [
+            // Customer runtime API key (license:validate, license:activate only)
+            // Get this from: https://octadecimal.engineering/shell-gate/docs/installation
+            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
+
+            // Product ID (public, safe to hardcode)
+            'product_id' => 'a100f72b-befe-48b4-a40c-ba1f62d626ff',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Gateway Configuration
     |--------------------------------------------------------------------------
     |
