@@ -11,10 +11,13 @@ use Octadecimal\ShellGate\ShellGatePlugin;
 
 /**
  * Filament page for terminal interface.
+ *
+ * Compatible with Filament 3 and 5. The view property is static so that
+ * it matches Filament 3's BasePage contract (F5 accepts both).
  */
 class TerminalPage extends Page
 {
-    protected string $view = 'shell-gate::terminal-page';
+    protected static string $view = 'shell-gate::terminal-page';
 
     /**
      * Get page title.

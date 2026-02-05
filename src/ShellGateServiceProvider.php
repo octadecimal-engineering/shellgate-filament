@@ -84,5 +84,11 @@ class ShellGateServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../stubs' => base_path('stubs/shell-gate'),
         ], 'shell-gate-stubs');
+
+        // Optional: migration adding is_super_admin to users (for default authorize callback)
+        $this->publishes([
+            __DIR__ . '/../stubs/add_is_super_admin_to_users_table.php' =>
+                database_path('migrations/2026_02_01_000002_add_is_super_admin_to_users_table.php'),
+        ], 'shell-gate-user-migration');
     }
 }

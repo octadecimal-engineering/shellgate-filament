@@ -25,7 +25,7 @@ Complete installation guide for Shell Gate, covering all deployment scenarios.
 |-----------|---------|-------------|
 | PHP | 8.2 | 8.3+ |
 | Laravel | 11.28 | 12.x |
-| Filament | 5.0 | 5.x latest |
+| Filament | 3.0 or 5.0 | 5.x latest |
 | Livewire | 4.0 | 4.x latest |
 | Node.js | 18 | 20 LTS |
 | npm | 9 | 10+ |
@@ -62,10 +62,14 @@ For experienced users who want to get started quickly.
 
 ```bash
 # 1. Install package (after adding repo to composer.json)
+# If using path repo and your app has "minimum-stability": "stable", use:
+composer require octadecimal/shell-gate:@dev
+# Otherwise (private versioned repo):
 composer require octadecimal/shell-gate
 
-# 2. Publish and migrate
+# 2. Publish config and optional user migration, then migrate
 php artisan vendor:publish --tag=shell-gate-config
+php artisan vendor:publish --tag=shell-gate-user-migration   # adds is_super_admin to users (if you use default auth)
 php artisan migrate
 
 # 3. Start gateway (development)
@@ -78,6 +82,8 @@ npm install && npm start
 # 5. Visit /admin/terminal
 ```
 
+If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback, your `User` model must have an `is_super_admin` attribute. Step 2 publishes an optional migration that adds this column; after migrating, set `is_super_admin = true` for users who may access the terminal (e.g. via a seeder or tinker).
+
 ---
 
 ## Step-by-Step Installation
@@ -87,6 +93,11 @@ npm install && npm start
 Shell Gate is distributed outside Packagist (commercial / private). Add a repository in your application’s `composer.json`:
 
 **Path repository (local development, e.g. when testing inside a monorepo):**
+
+1. Place the package so that your application can reference it at `./packages/octadecimal/shell-gate`. For example:
+   - **From a .zip archive:** Unzip the archive and copy the **contents** of the extracted folder (the one that contains `composer.json`, `src/`, `config/`, etc.) into `packages/octadecimal/shell-gate` inside your project root (create the directory if needed).
+   - **From git:** Clone or add as a submodule into `packages/octadecimal/shell-gate`.
+2. Add the path repository to your application’s `composer.json`:
 
 ```json
 {
@@ -107,11 +118,14 @@ Then install:
 composer require octadecimal/shell-gate
 ```
 
-For a specific version (when using a versioned private repo):
-
-```bash
-composer require octadecimal/shell-gate:^1.0
-```
+- **If your application has `"minimum-stability": "stable"`** and you use the path repository, Composer may reject the package (path repos are treated as `dev-main`). Use:
+  ```bash
+  composer require octadecimal/shell-gate:@dev
+  ```
+- For a specific version (when using a versioned private repo):
+  ```bash
+  composer require octadecimal/shell-gate:^1.0
+  ```
 
 ### Step 2: Publish Configuration
 
@@ -137,7 +151,16 @@ This creates:
 php artisan migrate
 ```
 
-Creates the `terminal_sessions` table for audit logging.
+This creates the `terminal_sessions` table (loaded from the package).
+
+**Optional — `is_super_admin` on users:** If you use the default authorization callback `auth()->user()?->is_super_admin`, your `User` model must have an `is_super_admin` attribute. To add it via migration:
+
+```bash
+php artisan vendor:publish --tag=shell-gate-user-migration
+php artisan migrate
+```
+
+Then set `is_super_admin = true` for users who may access the terminal (e.g. in a seeder or `php artisan tinker`). If you use a different authorization callback (e.g. a role or permission), you can skip this.
 
 ### Step 4: Configure Environment
 
@@ -555,6 +578,14 @@ docker logs -f shell-gate-gateway
 ---
 
 ## Troubleshooting
+
+### Issue: "Cannot redeclare static ... \$view as non static" (Filament 3)
+
+**Symptoms:** Fatal error when loading the panel or running `artisan migrate`, mentioning `TerminalPage` and `$view`.
+
+**Cause:** Filament 3 declares `$view` as `static` on the base Page class; the plugin must match.
+
+**Solution:** Ensure you use a Shell Gate version that supports Filament 3 (e.g. `composer.json` in the package allows `"filament/filament": "^3.0|^5.0"` and `TerminalPage` uses `protected static string $view`). If you maintain a fork, change `protected string $view` to `protected static string $view` in `TerminalPage.php`.
 
 ### Issue: "WebSocket connection failed"
 
