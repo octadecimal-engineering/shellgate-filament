@@ -15,20 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verifies prerequisites (PHP 8.2+, Laravel 11/12, Filament 3+, Node 18+)
   - Does NOT create users or modify permissions
   - Does NOT make security decisions
-  - All access control delegated to plugin UI
   - Configures gateway JWT and working directory automatically
   - License key prompt (optional, required for production)
-  - Clear post-installation instructions
+  - Clear post-installation instructions with authorization options
+
+- **Simplified INSTALLATION.md** - Restructured for clarity
+  - Quick Start section (5 minutes for local dev)
+  - Clear Authorization Setup section with 3 options (is_super_admin, Spatie, custom)
+  - Separated production deployment sections (Gateway, Nginx, Docker)
+  - Reduced from ~1100 to ~625 lines
 
 ### Fixed
 
 - Gateway `DEFAULT_CWD` now set to Laravel project directory (fixes PTY exit on macOS)
 - AuditService graceful fallback when `shell-gate-audit` log channel not configured
+- Documentation: Standardized environment variable naming (`SHELL_GATE_*` prefix)
+- Documentation: Fixed config file path (`config/shell-gate.php`)
+- Documentation: Replaced all `WebTerminalPlugin` references with `ShellGatePlugin`
+- Documentation: Added required `is_super_admin` boolean cast warning
 
 ### Security
 
 - Installer no longer modifies user permissions or grants terminal access
-- Access control now fully managed via plugin UI (no implicit super-admin access)
+- Access control configured via `->authorize()` callback or default checks
 
 ## [1.1.0] - 2026-02-05
 

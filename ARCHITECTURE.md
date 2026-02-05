@@ -122,11 +122,11 @@ fitAddon.fit();
 
 ### 2. Laravel/Filament Layer
 
-#### WebTerminalPlugin
+#### ShellGatePlugin
 Main plugin class implementing `Filament\Contracts\Plugin`.
 
 ```php
-final class WebTerminalPlugin implements Plugin
+final class ShellGatePlugin implements Plugin
 {
     public function getId(): string;
     public function register(Panel $panel): void;
@@ -146,7 +146,7 @@ Filament Page that renders the terminal UI.
 ```php
 class TerminalPage extends Page
 {
-    protected static string $view = 'web-terminal::terminal-page';
+    protected static string $view = 'shell-gate::terminal-page';
     
     public function mount(): void;
     public function getTerminalToken(): string;
@@ -375,7 +375,7 @@ packages/octadecimal/shell-gate/
 ├── README.md
 │
 ├── config/
-│   └── web-terminal.php              # Plugin configuration
+│   └── shell-gate.php              # Plugin configuration
 │
 ├── database/
 │   └── migrations/
@@ -403,7 +403,7 @@ packages/octadecimal/shell-gate/
 │           └── terminal.blade.php    # Terminal component
 │
 ├── src/
-│   ├── WebTerminalPlugin.php         # Main plugin class
+│   ├── ShellGatePlugin.php         # Main plugin class
 │   ├── WebTerminalServiceProvider.php
 │   │
 │   ├── Pages/
@@ -501,17 +501,17 @@ flowchart LR
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-terminal-gateway
+  name: shell-gate-gateway
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: web-terminal-gateway
+      app: shell-gate-gateway
   template:
     spec:
       containers:
       - name: gateway
-        image: octadecimal/web-terminal-gateway:latest
+        image: octadecimal/shell-gate-gateway:latest
         ports:
         - containerPort: 7681
         env:
@@ -552,7 +552,7 @@ upstream terminal_gateway {
 Configure maximum concurrent sessions per user and globally:
 
 ```php
-// config/web-terminal.php
+// config/shell-gate.php
 return [
     'limits' => [
         'max_sessions_per_user' => 2,
