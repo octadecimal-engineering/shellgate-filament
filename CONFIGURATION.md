@@ -28,6 +28,35 @@ After publishing, the configuration is located at `config/web-terminal.php`.
 return [
     /*
     |--------------------------------------------------------------------------
+    | License Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Shell Gate uses Anystack for license verification at runtime.
+    | Purchase a license at: https://octadecimal.engineering/shell-gate
+    |
+    | Verification is cached for 24 hours and skipped in local/testing.
+    |
+    */
+    'license' => [
+        // Your license key (required for production)
+        'key' => env('SHELL_GATE_LICENSE_KEY'),
+
+        // Enable/disable license verification
+        // Auto-disabled in local and testing environments
+        'verify' => env('SHELL_GATE_LICENSE_VERIFY', true),
+
+        // Anystack runtime API configuration
+        'anystack' => [
+            // Customer runtime API key (minimal permissions: validate/activate)
+            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
+
+            // Product ID (public, hardcoded)
+            'product_id' => 'a100f72b-befe-48b4-a40c-ba1f62d626ff',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Gateway Configuration
     |--------------------------------------------------------------------------
     |
@@ -256,8 +285,13 @@ return [
 All environment variables with their defaults:
 
 ```env
+# License (required for production)
+SHELL_GATE_LICENSE_KEY=your-license-key              # From purchase confirmation
+ANYSTACK_CUSTOMER_API_KEY=8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J  # Runtime API key (same for all)
+SHELL_GATE_LICENSE_VERIFY=true                       # Set false to disable
+
 # Gateway
-WEB_TERMINAL_GATEWAY_URL=wss://yourdomain.com/ws/terminal
+SHELL_GATE_GATEWAY_URL=wss://yourdomain.com/ws/terminal
 WEB_TERMINAL_GATEWAY_HOST=127.0.0.1
 WEB_TERMINAL_GATEWAY_PORT=7681
 

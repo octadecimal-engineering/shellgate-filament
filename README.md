@@ -83,7 +83,7 @@ bash vendor/octadecimal/shell-gate/install.sh
 # or, with path repo:  bash packages/octadecimal/shell-gate/install.sh
 ```
 
-It publishes config, runs migrations, prepares the gateway `.env` and runs `npm install`. You still need to register the plugin and start the gateway — the script prints the exact next steps. See [INSTALLATION.md — Quick install via script](INSTALLATION.md#quick-install-via-script) for the full path.
+It publishes config, runs migrations, prepares the gateway `.env` and runs `npm install`. **The script will prompt you for your license key**, which will be saved to your `.env` file as `SHELL_GATE_LICENSE_KEY`. You still need to register the plugin and start the gateway — the script prints the exact next steps. See [INSTALLATION.md — Quick install via script](INSTALLATION.md#quick-install-via-script) for the full path.
 
 ---
 
@@ -238,6 +238,38 @@ location /ws/terminal {
 - [Installation](INSTALLATION.md) — Detailed setup guide
 - [Configuration](CONFIGURATION.md) — All configuration options
 - [API Reference](API.md) — REST endpoints, WebSocket protocol
+
+---
+
+## License Verification
+
+Shell Gate validates your license via **Anystack** at runtime.
+
+### Setup
+
+Add both keys to your `.env`:
+
+```env
+# Your license key (from purchase confirmation)
+SHELL_GATE_LICENSE_KEY=your-license-key-here
+
+# Anystack runtime API key (same for all customers)
+ANYSTACK_CUSTOMER_API_KEY=8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J
+```
+
+The `ANYSTACK_CUSTOMER_API_KEY` has minimal permissions (validate/activate only) and is safe to use in your application.
+
+### Check Status
+
+```bash
+php artisan shell-gate:license
+```
+
+### Development
+
+License verification is **automatically skipped** in `local` and `testing` environments.
+
+For more details, see [Installation → License Verification](INSTALLATION.md#license-verification).
 
 ---
 
