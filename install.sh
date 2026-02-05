@@ -233,6 +233,16 @@ if [[ ! -f "$GATEWAY_DIR/.env" ]]; then
       sed -i "s|^ALLOWED_ORIGINS=.*|ALLOWED_ORIGINS=|" "$GATEWAY_DIR/.env"
     fi
   fi
+  # Set DEFAULT_CWD to Laravel project directory (fixes /var/www not existing on macOS)
+  if grep -q '^DEFAULT_CWD=' "$GATEWAY_DIR/.env"; then
+    LARAVEL_ROOT_ESCAPED="${LARAVEL_ROOT//\//\\/}"
+    if [[ "$(uname -s)" = Darwin ]]; then
+      sed -i '' "s|^DEFAULT_CWD=.*|DEFAULT_CWD=$LARAVEL_ROOT|" "$GATEWAY_DIR/.env"
+    else
+      sed -i "s|^DEFAULT_CWD=.*|DEFAULT_CWD=$LARAVEL_ROOT|" "$GATEWAY_DIR/.env"
+    fi
+    echo "Set DEFAULT_CWD in gateway/.env to Laravel project directory."
+  fi
 else
   echo "Gateway .env already exists. Ensure JWT_SECRET matches Laravel (see above)."
 fi
