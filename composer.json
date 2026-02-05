@@ -3,6 +3,7 @@
     "description": "Real bash terminal in Filament admin panel — PTY + WebSocket. JWT, audit, wss://.",
     "keywords": [
         "filament",
+        "filament-3",
         "filament-5",
         "terminal",
         "web-terminal",
@@ -20,7 +21,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "filament/filament": "^5.0",
+        "filament/filament": "^3.0|^5.0",
         "firebase/php-jwt": "^6.10|^7.0",
         "illuminate/support": "^11.0|^12.0"
     },

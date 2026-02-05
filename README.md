@@ -2,7 +2,7 @@
 
 **A real bash terminal in your Filament admin panel — powered by PTY + WebSocket.**
 
-[![Filament v5](https://img.shields.io/badge/Filament-v5-blue)](https://filamentphp.com)
+[![Filament v3/v5](https://img.shields.io/badge/Filament-v3%20%7C%20v5-blue)](https://filamentphp.com)
 [![Laravel 11+](https://img.shields.io/badge/Laravel-11%2B-red)](https://laravel.com)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-purple)](https://php.net)
 [![License: Commercial](https://img.shields.io/badge/License-Commercial-green)](LICENSE-COMMERCIAL.md)
@@ -66,7 +66,7 @@ Shell Gate is a **standalone** product. It may be developed or tested inside ano
 |-----------|---------|
 | PHP | 8.2+ |
 | Laravel | 11.28+ |
-| Filament | 5.0+ |
+| Filament | 3.0+ or 5.0+ |
 | Livewire | 4.0+ |
 | Node.js | 18+ (for Terminal Gateway) |
 
@@ -80,7 +80,8 @@ Shell Gate is **not on Packagist**. Use one of these options:
 
 **Option A — Path repository (local development / testing):**
 
-In your application’s `composer.json`:
+1. Place the package at `./packages/octadecimal/shell-gate` (e.g. unzip a release into that path so it contains `composer.json`, `src/`, etc.).
+2. In your application’s `composer.json` add:
 
 ```json
 {
@@ -93,7 +94,13 @@ In your application’s `composer.json`:
 }
 ```
 
-Then:
+3. Install. If your app has `"minimum-stability": "stable"`, use `@dev`:
+
+```bash
+composer require octadecimal/shell-gate:@dev
+```
+
+Otherwise:
 
 ```bash
 composer require octadecimal/shell-gate
@@ -118,6 +125,15 @@ php artisan vendor:publish --tag=shell-gate-config
 ```bash
 php artisan migrate
 ```
+
+If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback, add the `is_super_admin` column to your users table:
+
+```bash
+php artisan vendor:publish --tag=shell-gate-user-migration
+php artisan migrate
+```
+
+Then set `is_super_admin = true` for users who may access the terminal.
 
 ### 4. Start Terminal Gateway
 
