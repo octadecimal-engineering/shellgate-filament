@@ -108,12 +108,18 @@ class AuditService
 
     /**
      * Write to log channel.
+     * Falls back to default Laravel log if configured channel doesn't exist.
      *
      * @param array<string, mixed> $context
      */
     private function log(string $level, string $message, array $context = []): void
     {
-        Log::channel($this->channel)->$level("[ShellGate] {$message}", $context);
+        try {
+            Log::channel($this->channel)->$level("[ShellGate] {$message}", $context);
+        } catch (\InvalidArgumentException $e) {
+            // Channel not configured, fallback to default log
+            Log::$level("[ShellGate] {$message}", $context);
+        }
     }
 
     /**
