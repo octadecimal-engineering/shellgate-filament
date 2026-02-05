@@ -1,0 +1,70 @@
+# Shell Gate Gateway - Systemd Service
+#
+# Installation:
+#   1. Copy this file to /etc/systemd/system/shell-gate-gateway.service
+#   2. Adjust paths and environment variables
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable shell-gate-gateway
+#   5. sudo systemctl start shell-gate-gateway
+#
+# Check status:
+#   sudo systemctl status shell-gate-gateway
+#   sudo journalctl -u shell-gate-gateway -f
+
+[Unit]
+Description=Shell Gate Terminal Gateway
+Documentation=https://github.com/octadecimalhq/shell-gate
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+
+# Working directory (change to actual path)
+WorkingDirectory=/var/www/shell-gate/gateway
+
+# Start Node.js
+ExecStart=/usr/bin/node index.js
+
+# Restart on failure
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# Environment variables
+Environment=NODE_ENV=production
+Environment=PORT=7681
+Environment=HOST=127.0.0.1
+
+# JWT secret - CHANGE TO YOUR OWN or use .env file
+# Environment=JWT_SECRET=your-secret-key-here
+EnvironmentFile=/var/www/shell-gate/gateway/.env
+
+# Allowed origins (comma-separated)
+# Environment=ALLOWED_ORIGINS=https://admin.example.com
+
+# Limits
+Environment=MAX_SESSIONS=100
+Environment=SESSION_TIMEOUT=0
+Environment=IDLE_TIMEOUT=1800
+
+# Security - restrict privileges
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=100%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shell-gate-gateway
+
+[Install]
+WantedBy=multi-user.target

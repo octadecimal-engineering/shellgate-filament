@@ -1,0 +1,38 @@
+# Composer
+/vendor/
+composer.lock
+composer.phar
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build & dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Testing & tools
+.phpunit.cache/
+.phpunit.result.cache
+phpunit.xml
+.php-cs-fixer.cache
+coverage/
+.phan/
+
+# Logs and temp
+*.log
+storage/
+tmp/
+temp/
+.dev/
+
