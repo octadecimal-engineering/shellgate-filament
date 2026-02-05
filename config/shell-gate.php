@@ -83,7 +83,7 @@ return [
     */
     'limits' => [
         // Maximum concurrent sessions per user
-        'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 3),
+        'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 10),
 
         // Maximum session idle time (seconds, 0 = no limit)
         'idle_timeout' => env('SHELL_GATE_IDLE_TIMEOUT', 1800),

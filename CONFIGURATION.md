@@ -116,8 +116,8 @@ return [
     |
     */
     'limits' => [
-        // Maximum concurrent sessions per user
-        'max_sessions_per_user' => env('WEB_TERMINAL_MAX_SESSIONS_USER', 2),
+        // Maximum concurrent sessions per user (default: 10)
+        'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 10),
         
         // Maximum total concurrent sessions
         'max_total_sessions' => env('WEB_TERMINAL_MAX_SESSIONS_TOTAL', 50),
