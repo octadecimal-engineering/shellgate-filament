@@ -134,6 +134,20 @@ npm install && npm start
 
 If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback, your `User` model must have an `is_super_admin` attribute. Step 2 publishes an optional migration that adds this column; after migrating, set `is_super_admin = true` for users who may access the terminal (e.g. via a seeder or tinker).
 
+**Important:** You must also cast `is_super_admin` as `boolean` in your `User` model:
+
+```php
+// app/Models/User.php
+protected function casts(): array
+{
+    return [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_super_admin' => 'boolean',  // Required for authorization
+    ];
+}
+```
+
 ---
 
 ## Step-by-Step Installation
@@ -211,6 +225,22 @@ php artisan migrate
 ```
 
 Then set `is_super_admin = true` for users who may access the terminal (e.g. in a seeder or `php artisan tinker`). If you use a different authorization callback (e.g. a role or permission), you can skip this.
+
+**Important:** You must also cast `is_super_admin` as `boolean` in your `User` model for the authorization to work correctly:
+
+```php
+// app/Models/User.php
+protected function casts(): array
+{
+    return [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_super_admin' => 'boolean',  // Required for authorization
+    ];
+}
+```
+
+Without this cast, the attribute may return `1` (integer) instead of `true` (boolean), causing authorization to fail.
 
 ### Step 4: Configure Environment
 
@@ -763,6 +793,36 @@ docker logs -f shell-gate-gateway
    // config/shell-gate.php
    'token_ttl' => 600, // 10 minutes
    ```
+
+### Issue: Terminal menu not visible in sidebar (authorization fails silently)
+
+**Symptoms:**
+- Plugin is registered but Terminal does not appear in Filament sidebar
+- User has `is_super_admin = 1` in database but cannot access terminal
+- No error messages shown
+
+**Cause:** The `is_super_admin` attribute is not cast as `boolean` in the User model. Without the cast, Laravel returns the raw database value (`1` or `0` as integer/string), and the `authorize` callback may not evaluate correctly.
+
+**Solution:** Add the `is_super_admin` cast to your `User` model:
+
+```php
+// app/Models/User.php
+protected function casts(): array
+{
+    return [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_super_admin' => 'boolean',  // Add this line
+    ];
+}
+```
+
+After adding the cast, clear caches:
+
+```bash
+php artisan config:clear
+php artisan view:clear
+```
 
 ### Issue: "Permission denied" when executing commands
 
