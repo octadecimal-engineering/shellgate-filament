@@ -6,14 +6,49 @@ Complete installation guide for Shell Gate, covering all deployment scenarios.
 
 ## Table of Contents
 
-1. [Requirements](#requirements)
-2. [Quick Install](#quick-install)
-3. [Step-by-Step Installation](#step-by-step-installation)
-4. [Gateway Setup](#gateway-setup)
-5. [Nginx Configuration](#nginx-configuration)
-6. [Docker Deployment](#docker-deployment)
-7. [Verification](#verification)
-8. [Troubleshooting](#troubleshooting)
+1. [Quick install via script](#quick-install-via-script) — **fastest**
+2. [Requirements](#requirements)
+3. [Quick Install](#quick-install)
+4. [Step-by-Step Installation](#step-by-step-installation)
+5. [Gateway Setup](#gateway-setup)
+6. [Nginx Configuration](#nginx-configuration)
+7. [Docker Deployment](#docker-deployment)
+8. [Verification](#verification)
+9. [Troubleshooting](#troubleshooting)
+
+---
+
+## Quick install via script
+
+**Fastest path:** if the package is already installed (e.g. `composer require octadecimal/shell-gate:@dev`), run the install script from your **Laravel project root**:
+
+```bash
+# From Laravel project root (where artisan and composer.json live)
+bash vendor/octadecimal/shell-gate/install.sh
+```
+
+If you use a path repository (package in `packages/octadecimal/shell-gate`):
+
+```bash
+bash packages/octadecimal/shell-gate/install.sh
+```
+
+The script will:
+
+- Publish `config/shell-gate.php`
+- Run migrations (terminal_sessions table)
+- Create `gateway/.env` from `.env.example` and copy `APP_KEY` from Laravel as `JWT_SECRET`
+- Run `npm install` in the gateway (including the macOS `spawn-helper` fix)
+
+**You still need to:**
+
+1. Publish and run the optional user migration if you use `is_super_admin`:  
+   `php artisan vendor:publish --tag=shell-gate-user-migration && php artisan migrate`
+2. Register the plugin in `AdminPanelProvider.php` (see [Step 5](#step-5-register-plugin)).
+3. Set `SHELL_GATE_GATEWAY_URL` in Laravel `.env` (e.g. `ws://127.0.0.1:7681` for local).
+4. Start the gateway: `cd vendor/octadecimal/shell-gate/gateway && npm start`.
+
+See [Step-by-Step Installation](#step-by-step-installation) for details and [Troubleshooting](#troubleshooting) if something fails.
 
 ---
 
