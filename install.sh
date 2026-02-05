@@ -12,7 +12,7 @@
 #   - sed with APP_KEY: value is escaped for \ and & to avoid injection.
 #   - migrate --force: on APP_ENV=production the script warns and asks for Enter.
 #   - read: only blocks when stdin is a TTY (CI/pipe-friendly).
-#   - Only reads .env and writes gateway/.env; does not modify Laravel .env.
+#   - Modifies Laravel .env to add license key and gateway URL if missing.
 #
 set -e
 
@@ -113,6 +113,74 @@ confirm() {
   read -r reply
   [[ "$reply" =~ ^[yY]$ ]]
 }
+
+# --- License key registration ---
+echo "=== License Registration ==="
+echo ""
+echo "Shell Gate requires a valid license key for production use."
+echo "Purchase a license at: https://octadecimal.engineering/shell-gate"
+echo ""
+echo "License types:"
+echo "  • Single Site (\$99)  - 1 production domain"
+echo "  • Unlimited (\$299)   - Unlimited domains"
+echo "  • Agency (\$499)      - Unlimited client projects"
+echo ""
+echo -e "${YELLOW}Enter your license key (or press Enter to skip for development):${NC}"
+LICENSE_KEY=""
+if [[ -t 0 ]]; then
+  read -r LICENSE_KEY
+else
+  LICENSE_KEY="${SHELL_GATE_LICENSE_KEY:-}"
+  if [[ -n "$LICENSE_KEY" ]]; then
+    echo "(Using license key from SHELL_GATE_LICENSE_KEY environment variable.)"
+  fi
+fi
+
+ANYSTACK_CUSTOMER_KEY="8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J"
+
+if [[ -n "$LICENSE_KEY" ]]; then
+  # Validate license key format (UUID format expected from Anystack)
+  if [[ ! "$LICENSE_KEY" =~ ^[a-fA-F0-9-]{36}$ ]]; then
+    echo -e "${YELLOW}Note: License key format doesn't match expected UUID format.${NC}"
+    echo "If you received this key from Octadecimal, it should work. Continuing..."
+  fi
+
+  # Save both keys to Laravel .env
+  if [[ -f "$LARAVEL_ROOT/.env" ]]; then
+    # Add/update license key
+    if grep -qE '^SHELL_GATE_LICENSE_KEY=' "$LARAVEL_ROOT/.env"; then
+      if [[ "$(uname -s)" = Darwin ]]; then
+        sed -i '' "s|^SHELL_GATE_LICENSE_KEY=.*|SHELL_GATE_LICENSE_KEY=$LICENSE_KEY|" "$LARAVEL_ROOT/.env"
+      else
+        sed -i "s|^SHELL_GATE_LICENSE_KEY=.*|SHELL_GATE_LICENSE_KEY=$LICENSE_KEY|" "$LARAVEL_ROOT/.env"
+      fi
+      echo "  Updated SHELL_GATE_LICENSE_KEY in .env"
+    else
+      echo "" >> "$LARAVEL_ROOT/.env"
+      echo "# Shell Gate License" >> "$LARAVEL_ROOT/.env"
+      echo "SHELL_GATE_LICENSE_KEY=$LICENSE_KEY" >> "$LARAVEL_ROOT/.env"
+      echo "  Added SHELL_GATE_LICENSE_KEY to .env"
+    fi
+
+    # Add Anystack customer API key (same for all customers, minimal permissions)
+    if ! grep -qE '^ANYSTACK_CUSTOMER_API_KEY=' "$LARAVEL_ROOT/.env"; then
+      echo "ANYSTACK_CUSTOMER_API_KEY=$ANYSTACK_CUSTOMER_KEY" >> "$LARAVEL_ROOT/.env"
+      echo "  Added ANYSTACK_CUSTOMER_API_KEY to .env"
+    fi
+  fi
+
+  echo ""
+  echo -e "License key saved. ${YELLOW}Verification happens automatically at runtime.${NC}"
+  echo "The license will be validated against Anystack when you access the terminal."
+  echo "Results are cached for 24 hours to minimize API calls."
+else
+  echo ""
+  echo "No license key provided."
+  echo -e "${YELLOW}Note: License verification is skipped in local/testing environments.${NC}"
+  echo -e "${RED}A valid license is required for production use.${NC}"
+  echo "You can add it later: SHELL_GATE_LICENSE_KEY=your-key in .env"
+fi
+echo ""
 
 echo "=== Step 1/6: Publishing config ==="
 echo "This will overwrite the file: config/shell-gate.php (if it already exists)."
