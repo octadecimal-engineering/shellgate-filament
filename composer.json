@@ -1,6 +1,6 @@
 {
     "name": "octadecimal/shell-gate",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Real bash terminal in Filament admin panel — PTY + WebSocket. JWT, audit, wss://.",
     "keywords": [
         "filament",
