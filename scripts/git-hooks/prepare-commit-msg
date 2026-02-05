@@ -1,0 +1,12 @@
+#!/bin/sh
+# Remove Cursor/cursoragent co-author from commit message (repo policy).
+# Install: cp scripts/git-hooks/prepare-commit-msg .git/hooks/prepare-commit-msg && chmod +x .git/hooks/prepare-commit-msg
+
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+
+# Strip lines containing Co-authored-by with cursor/cursoragent
+sed -i '' '/Co-authored-by:.*[Cc]ursor/d' "$msg_file" 2>/dev/null || \
+sed -i '/Co-authored-by:.*[Cc]ursor/d' "$msg_file" 2>/dev/null
+
+exit 0

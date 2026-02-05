@@ -34,6 +34,15 @@ refactor/extract-conflict-checker
 hotfix/ssl-certificate-renewal
 ```
 
+### Optional: strip Cursor co-author from commits
+
+This repo does not add Cursor/cursoragent as co-author. To automatically remove that trailer if your editor adds it:
+
+```bash
+cp scripts/git-hooks/prepare-commit-msg .git/hooks/prepare-commit-msg
+chmod +x .git/hooks/prepare-commit-msg
+```
+
 ---
 
 ## Commit convention

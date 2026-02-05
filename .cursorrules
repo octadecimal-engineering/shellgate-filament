@@ -1,0 +1,6 @@
+# Shell Gate — Cursor rules
+
+## Git commits
+
+- When creating or suggesting git commit messages in this repository, **do not add** `Co-authored-by`, `cursoragent`, or any Cursor/AI attribution to the commit message.
+- Commit messages should list only the human author; no co-author trailers.
