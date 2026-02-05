@@ -18,7 +18,7 @@ Complete reference for all configuration options in Shell Gate.
 
 ## Configuration File
 
-After publishing, the configuration is located at `config/web-terminal.php`.
+After publishing, the configuration is located at `config/shell-gate.php`.
 
 ### Full Configuration Reference
 
@@ -65,11 +65,11 @@ return [
     */
     'gateway' => [
         // WebSocket URL for browser connections (wss:// in production)
-        'url' => env('WEB_TERMINAL_GATEWAY_URL', 'ws://localhost:7681'),
+        'url' => env('SHELL_GATE_GATEWAY_URL', 'ws://localhost:7681'),
         
         // Gateway host and port (for local gateway process)
-        'host' => env('WEB_TERMINAL_GATEWAY_HOST', '127.0.0.1'),
-        'port' => env('WEB_TERMINAL_GATEWAY_PORT', 7681),
+        'host' => env('SHELL_GATE_GATEWAY_HOST', '127.0.0.1'),
+        'port' => env('SHELL_GATE_GATEWAY_PORT', 7681),
         
         // Health check endpoint
         'health_endpoint' => '/health',
@@ -85,16 +85,16 @@ return [
     */
     'auth' => [
         // JWT secret key (defaults to APP_KEY)
-        'jwt_secret' => env('WEB_TERMINAL_JWT_SECRET'),
+        'jwt_secret' => env('SHELL_GATE_JWT_SECRET'),
         
         // Token time-to-live in seconds (default: 5 minutes)
-        'token_ttl' => env('WEB_TERMINAL_TOKEN_TTL', 300),
+        'token_ttl' => env('SHELL_GATE_TOKEN_TTL', 300),
         
         // Bind token to client IP address
-        'bind_ip' => env('WEB_TERMINAL_BIND_IP', true),
+        'bind_ip' => env('SHELL_GATE_BIND_IP', true),
         
         // Bind token to user agent
-        'bind_user_agent' => env('WEB_TERMINAL_BIND_UA', true),
+        'bind_user_agent' => env('SHELL_GATE_BIND_UA', true),
         
         // JWT algorithm
         'algorithm' => 'HS256',
@@ -110,10 +110,10 @@ return [
     */
     'terminal' => [
         // Shell to spawn (bash, zsh, sh)
-        'shell' => env('WEB_TERMINAL_SHELL', '/bin/bash'),
+        'shell' => env('SHELL_GATE_SHELL', '/bin/bash'),
         
         // Working directory for new sessions
-        'cwd' => env('WEB_TERMINAL_CWD', base_path()),
+        'cwd' => env('SHELL_GATE_CWD', base_path()),
         
         // Environment variables to pass to shell
         'env' => [
@@ -123,17 +123,17 @@ return [
         ],
         
         // Additional environment from .env (comma-separated keys)
-        'pass_env' => env('WEB_TERMINAL_PASS_ENV', ''),
+        'pass_env' => env('SHELL_GATE_PASS_ENV', ''),
         
         // Default terminal dimensions
         'cols' => 80,
         'rows' => 24,
         
         // System user to run shell as (null = same as gateway)
-        'user' => env('WEB_TERMINAL_USER'),
+        'user' => env('SHELL_GATE_USER'),
         
         // Chroot path (null = no chroot)
-        'chroot' => env('WEB_TERMINAL_CHROOT'),
+        'chroot' => env('SHELL_GATE_CHROOT'),
     ],
 
     /*
@@ -149,7 +149,7 @@ return [
         'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 10),
         
         // Maximum total concurrent sessions
-        'max_total_sessions' => env('WEB_TERMINAL_MAX_SESSIONS_TOTAL', 50),
+        'max_total_sessions' => env('SHELL_GATE_MAX_SESSIONS_TOTAL', 50),
         
         // Token requests per minute per user
         'token_requests_per_minute' => 5,
@@ -158,10 +158,10 @@ return [
         'max_connections_per_ip' => 3,
         
         // Session timeout in seconds (0 = no timeout)
-        'session_timeout' => env('WEB_TERMINAL_SESSION_TIMEOUT', 3600),
+        'session_timeout' => env('SHELL_GATE_SESSION_TIMEOUT', 3600),
         
         // Idle timeout in seconds (0 = no timeout)
-        'idle_timeout' => env('WEB_TERMINAL_IDLE_TIMEOUT', 900),
+        'idle_timeout' => env('SHELL_GATE_IDLE_TIMEOUT', 900),
     ],
 
     /*
@@ -174,16 +174,16 @@ return [
     */
     'audit' => [
         // Enable audit logging
-        'enabled' => env('WEB_TERMINAL_AUDIT_ENABLED', true),
+        'enabled' => env('SHELL_GATE_AUDIT_ENABLED', true),
         
         // Log channel name
-        'channel' => env('WEB_TERMINAL_AUDIT_CHANNEL', 'terminal-audit'),
+        'channel' => env('SHELL_GATE_AUDIT_CHANNEL', 'terminal-audit'),
         
         // Log all commands (high volume, security sensitive)
-        'log_commands' => env('WEB_TERMINAL_LOG_COMMANDS', false),
+        'log_commands' => env('SHELL_GATE_LOG_COMMANDS', false),
         
         // Log terminal output (very high volume)
-        'log_output' => env('WEB_TERMINAL_LOG_OUTPUT', false),
+        'log_output' => env('SHELL_GATE_LOG_OUTPUT', false),
         
         // Patterns to redact from logs
         'redact_patterns' => [
@@ -292,33 +292,33 @@ SHELL_GATE_LICENSE_VERIFY=true                       # Set false to disable
 
 # Gateway
 SHELL_GATE_GATEWAY_URL=wss://yourdomain.com/ws/terminal
-WEB_TERMINAL_GATEWAY_HOST=127.0.0.1
-WEB_TERMINAL_GATEWAY_PORT=7681
+SHELL_GATE_GATEWAY_HOST=127.0.0.1
+SHELL_GATE_GATEWAY_PORT=7681
 
 # Authentication
-WEB_TERMINAL_JWT_SECRET=          # Defaults to APP_KEY
-WEB_TERMINAL_TOKEN_TTL=300        # 5 minutes
-WEB_TERMINAL_BIND_IP=true
-WEB_TERMINAL_BIND_UA=true
+SHELL_GATE_JWT_SECRET=          # Defaults to APP_KEY
+SHELL_GATE_TOKEN_TTL=300        # 5 minutes
+SHELL_GATE_BIND_IP=true
+SHELL_GATE_BIND_UA=true
 
 # Terminal
-WEB_TERMINAL_SHELL=/bin/bash
-WEB_TERMINAL_CWD=/var/www/app
-WEB_TERMINAL_USER=                # Run as specific user
-WEB_TERMINAL_CHROOT=              # Chroot path
-WEB_TERMINAL_PASS_ENV=            # Additional env vars
+SHELL_GATE_SHELL=/bin/bash
+SHELL_GATE_CWD=/var/www/app
+SHELL_GATE_USER=                # Run as specific user
+SHELL_GATE_CHROOT=              # Chroot path
+SHELL_GATE_PASS_ENV=            # Additional env vars
 
 # Limits
-WEB_TERMINAL_MAX_SESSIONS_USER=2
-WEB_TERMINAL_MAX_SESSIONS_TOTAL=50
-WEB_TERMINAL_SESSION_TIMEOUT=3600
-WEB_TERMINAL_IDLE_TIMEOUT=900
+SHELL_GATE_MAX_SESSIONS_USER=2
+SHELL_GATE_MAX_SESSIONS_TOTAL=50
+SHELL_GATE_SESSION_TIMEOUT=3600
+SHELL_GATE_IDLE_TIMEOUT=900
 
 # Audit
-WEB_TERMINAL_AUDIT_ENABLED=true
-WEB_TERMINAL_AUDIT_CHANNEL=terminal-audit
-WEB_TERMINAL_LOG_COMMANDS=false
-WEB_TERMINAL_LOG_OUTPUT=false
+SHELL_GATE_AUDIT_ENABLED=true
+SHELL_GATE_AUDIT_CHANNEL=terminal-audit
+SHELL_GATE_LOG_COMMANDS=false
+SHELL_GATE_LOG_OUTPUT=false
 ```
 
 ---
@@ -486,7 +486,7 @@ function parseEnv(str) {
 ### Theme Presets
 
 ```php
-// config/web-terminal.php
+// config/shell-gate.php
 
 'ui' => [
     // Dark theme (default)
@@ -660,7 +660,7 @@ module.exports = {
 ### Tenant Isolation
 
 ```php
-// config/web-terminal.php
+// config/shell-gate.php
 'terminal' => [
     'cwd' => function () {
         if ($tenant = filament()->getTenant()) {

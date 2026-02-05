@@ -131,23 +131,34 @@ if (! auth()->check()) {
 
 ### Layer 2: Role-Based Authorization
 
-Only authorized roles can access the terminal. Default: `super_admin` only.
+Terminal access requires explicit authorization via the `->authorize()` callback.
 
 ```php
-// WebTerminalPlugin configuration
-WebTerminalPlugin::make()
+// ShellGatePlugin configuration in AdminPanelProvider.php
+use Octadecimal\ShellGate\ShellGatePlugin;
+
+ShellGatePlugin::make()
     ->authorize(function (): bool {
         $user = auth()->user();
-        
-        // Option 1: Super admin only (recommended)
+
+        // Option 1: is_super_admin attribute (simplest)
         return $user?->is_super_admin ?? false;
-        
-        // Option 2: Specific role
-        // return $user?->hasRole('terminal-access');
-        
+
+        // Option 2: Spatie roles
+        // return $user?->hasRole('super_admin');
+
         // Option 3: Permission-based
         // return $user?->can('access-terminal');
     });
+```
+
+**Important:** If using `is_super_admin`, add boolean cast to User model:
+
+```php
+protected function casts(): array
+{
+    return ['is_super_admin' => 'boolean'];
+}
 ```
 
 ### Layer 3: JWT Token
@@ -157,7 +168,7 @@ Short-lived JWT tokens authenticate WebSocket connections.
 ```php
 // Token structure
 [
-    'iss' => 'web-terminal',
+    'iss' => 'shell-gate',
     'sub' => $user->id,
     'session_id' => $sessionId,
     'iat' => time(),
@@ -482,7 +493,7 @@ class AuditService
     
     public function logCommand(string $sessionId, string $command): void
     {
-        if (config('web-terminal.audit.log_commands', true)) {
+        if (config('shell-gate.audit.log_commands', true)) {
             Log::channel('terminal-audit')->info('Command executed', [
                 'session_id' => $sessionId,
                 'command' => $this->sanitizeCommand($command),
@@ -524,7 +535,7 @@ class AuditService
 ### Connection Limits
 
 ```php
-// config/web-terminal.php
+// config/shell-gate.php
 'rate_limits' => [
     // Per user
     'max_sessions_per_user' => 2,
@@ -558,7 +569,7 @@ public function __invoke(Request $request): JsonResponse
         ->whereNull('ended_at')
         ->count();
     
-    if ($activeSessions >= config('web-terminal.rate_limits.max_sessions_per_user')) {
+    if ($activeSessions >= config('shell-gate.rate_limits.max_sessions_per_user')) {
         return response()->json([
             'error' => 'Maximum concurrent sessions reached.',
         ], 429);
@@ -639,7 +650,7 @@ flowchart TD
 docker stop $(docker ps -q --filter "name=terminal-")
 
 # Or for direct PTY
-pkill -f "web-terminal-gateway"
+pkill -f "shell-gate-gateway"
 ```
 
 ---

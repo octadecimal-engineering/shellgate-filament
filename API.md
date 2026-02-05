@@ -602,7 +602,7 @@ class TerminalApiController extends Controller
         return response()->json([
             'token' => $token,
             'session_id' => $session->id,
-            'expires_at' => now()->addSeconds(config('web-terminal.auth.token_ttl')),
+            'expires_at' => now()->addSeconds(config('shell-gate.auth.token_ttl')),
         ]);
     }
 }

@@ -139,14 +139,27 @@ php artisan vendor:publish --tag=shell-gate-config
 php artisan migrate
 ```
 
-If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback, add the `is_super_admin` column to your users table:
+If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback:
 
 ```bash
+# Add is_super_admin column to users table
 php artisan vendor:publish --tag=shell-gate-user-migration
 php artisan migrate
 ```
 
-Then set `is_super_admin = true` for users who may access the terminal.
+Add the boolean cast to `app/Models/User.php` (required!):
+
+```php
+protected function casts(): array
+{
+    return [
+        // ... existing casts
+        'is_super_admin' => 'boolean',
+    ];
+}
+```
+
+Grant access to users via tinker/seeder: `User::first()->update(['is_super_admin' => true])`
 
 ### 4. Start Terminal Gateway
 

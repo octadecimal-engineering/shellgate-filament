@@ -8,8 +8,8 @@
 #
 # SECURITY NOTICE:
 #   This installer does NOT create users, modify permissions, or make
-#   security decisions. All access control is handled via the plugin UI
-#   after installation.
+#   security decisions. Access control is configured via the plugin's
+#   ->authorize() callback or default is_super_admin / Spatie role checks.
 #
 # Usage:
 #   1. Extract the ZIP archive in your Laravel project root
@@ -354,7 +354,7 @@ print_instructions() {
     echo -e "${BOLD}  Installation Complete${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo -e "${YELLOW}${BOLD}  IMPORTANT — MANUAL SETUP REQUIRED${NC}"
+    echo -e "${YELLOW}${BOLD}  NEXT STEPS${NC}"
     echo ""
     echo "  1. Register the plugin in your AdminPanelProvider.php:"
     echo ""
@@ -362,22 +362,32 @@ print_instructions() {
     echo ""
     echo "     ->plugin("
     echo "         ShellGatePlugin::make()"
+    echo "             ->authorize(fn () => auth()->user()?->is_super_admin)"
     echo "     )"
     echo ""
-    echo "  2. Start the terminal gateway:"
+    echo "  2. Add is_super_admin to your User model (if not using Spatie roles):"
+    echo ""
+    echo -e "     ${BLUE}php artisan vendor:publish --tag=shell-gate-user-migration${NC}"
+    echo -e "     ${BLUE}php artisan migrate${NC}"
+    echo ""
+    echo "     Then add to app/Models/User.php casts():"
+    echo -e "         ${BLUE}'is_super_admin' => 'boolean',${NC}"
+    echo ""
+    echo "  3. Grant access to users:"
+    echo ""
+    echo "     Set is_super_admin = true for authorized users (via tinker/seeder)"
+    echo "     Or use Spatie: assign 'super_admin' role"
+    echo ""
+    echo "  4. Start the terminal gateway:"
     echo ""
     echo -e "     ${BLUE}cd vendor/octadecimal/shell-gate/gateway && npm start${NC}"
     echo ""
-    echo "  3. Log in to Filament as an administrator."
-    echo ""
-    echo "  4. Navigate to ${BOLD}Shell Gate → Access Settings${NC}"
-    echo ""
-    echo "  5. Grant terminal access to authorized users."
+    echo "  5. Visit /admin/terminal"
     echo ""
     echo -e "${RED}${BOLD}  SECURITY NOTICE${NC}"
-    echo "  No users are granted terminal access by default."
-    echo "  The installer does not modify user permissions."
-    echo "  All access control is managed via the plugin UI."
+    echo "  No users have terminal access by default."
+    echo "  You must explicitly grant access via is_super_admin or Spatie roles."
+    echo "  See INSTALLATION.md for custom authorization options."
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
