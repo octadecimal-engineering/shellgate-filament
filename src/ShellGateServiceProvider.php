@@ -52,6 +52,9 @@ class ShellGateServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
+            $this->commands([
+                Console\CloseSessionsCommand::class,
+            ]);
         }
     }
 

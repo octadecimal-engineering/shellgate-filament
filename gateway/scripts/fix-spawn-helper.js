@@ -11,7 +11,7 @@ const nodePtyRoot = path.join(__dirname, '..', 'node_modules', 'node-pty');
 const prebuildsDir = path.join(nodePtyRoot, 'prebuilds');
 
 try {
-  if (!fs.existsSync(prebuildsDir)) return;
+  if (!fs.existsSync(prebuildsDir)) process.exit(0);
   for (const arch of fs.readdirSync(prebuildsDir)) {
     const archPath = path.join(prebuildsDir, arch);
     if (!fs.statSync(archPath).isDirectory()) continue;

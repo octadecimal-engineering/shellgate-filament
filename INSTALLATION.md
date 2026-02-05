@@ -6,7 +6,7 @@ Complete installation guide for Shell Gate, covering all deployment scenarios.
 
 ## Table of Contents
 
-1. [Quick install via script](#quick-install-via-script) — **fastest**
+1. [Quick install via script](#quick-install-via-script) — **fastest** (see ⚠ [warning](#quick-install-via-script))
 2. [Requirements](#requirements)
 3. [Quick Install](#quick-install)
 4. [Step-by-Step Installation](#step-by-step-installation)
@@ -19,6 +19,21 @@ Complete installation guide for Shell Gate, covering all deployment scenarios.
 ---
 
 ## Quick install via script
+
+> ### ⚠ WARNING — Use the install script at your own risk
+>
+> **The vendor recommends installing Shell Gate by following this documentation** ([Step-by-Step Installation](#step-by-step-installation)) **rather than using the install script.** The script is provided for convenience only.
+>
+> **The vendor does not accept any responsibility for decisions you make or consequences that result from running the script.** By using it you acknowledge that:
+>
+> - The script will **overwrite** `config/shell-gate.php` (with `--force`).
+> - The script will run **database migrations** (`php artisan migrate --force`), which will change your database schema.
+> - The script will **read** your Laravel `.env` (e.g. `APP_KEY`) and **create or update** `vendor/octadecimal/shell-gate/gateway/.env`.
+> - The script will run **`npm install`** in the gateway directory (third-party dependencies).
+>
+> **You must run the script only if you understand and accept these actions.** Prefer the [Step-by-Step Installation](#step-by-step-installation) if you want full control over each change. On production, consider running migrations and config publishes manually instead of using the script.
+
+---
 
 **Fastest path:** if the package is already installed (e.g. `composer require octadecimal/shell-gate:@dev`), run the install script from your **Laravel project root**:
 
