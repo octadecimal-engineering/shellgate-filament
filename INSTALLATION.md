@@ -824,6 +824,50 @@ php artisan config:clear
 php artisan view:clear
 ```
 
+### Issue: "Maximum session limit reached"
+
+**Symptoms:**
+- Terminal shows "Maximum session limit reached" error
+- Cannot open new terminal sessions
+- Previous sessions may have been left open (e.g., browser closed without proper disconnect)
+
+**Cause:** The plugin tracks sessions in the `terminal_sessions` database table. Sessions that were not properly closed (browser crash, network disconnect, server restart) remain as "active" in the database, counting against the per-user limit.
+
+**Solution:** Close stale sessions using the built-in artisan command:
+
+```bash
+# Close all active sessions
+php artisan shell-gate:close-sessions
+
+# Close sessions for a specific user
+php artisan shell-gate:close-sessions --user=1
+
+# Close with a specific reason (logged in audit)
+php artisan shell-gate:close-sessions --reason=maintenance
+```
+
+You can also increase the session limit in `config/shell-gate.php`:
+
+```php
+'limits' => [
+    'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 10),
+],
+```
+
+Or via environment variable:
+
+```env
+SHELL_GATE_MAX_SESSIONS=10
+```
+
+**Automated cleanup:** For production, consider adding a scheduled task to close stale sessions:
+
+```php
+// app/Console/Kernel.php
+$schedule->command('shell-gate:close-sessions --reason=scheduled')
+         ->daily();
+```
+
 ### Issue: "Permission denied" when executing commands
 
 **Symptoms:**
