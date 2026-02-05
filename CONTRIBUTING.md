@@ -34,6 +34,15 @@ refactor/extract-conflict-checker
 hotfix/ssl-certificate-renewal
 ```
 
+### Optional: strip IDE co-author from commits
+
+This repo does not add IDE/ideagent as co-author. To automatically remove that trailer if your editor adds it:
+
+```bash
+cp scripts/git-hooks/prepare-commit-msg .git/hooks/prepare-commit-msg
+chmod +x .git/hooks/prepare-commit-msg
+```
+
 ---
 
 ## Commit convention
