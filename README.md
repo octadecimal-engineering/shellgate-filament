@@ -1,4 +1,4 @@
-# Shell Gate
+# ShellGate
 
 **A real bash terminal in your Filament admin panel — powered by PTY + WebSocket.**
 
