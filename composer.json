@@ -1,5 +1,5 @@
 {
-    "name": "octadecimal/shell-gate",
+    "name": "octadecimalhq/shellgate",
     "version": "1.2.2",
     "description": "Real bash terminal in Filament admin panel — PTY + WebSocket. JWT, audit, wss://.",
     "keywords": [
@@ -13,7 +13,7 @@
         "websocket",
         "octadecimal"
     ],
-    "homepage": "https://github.com/octadecimal-engineering/shellgate-filament",
+    "homepage": "https://github.com/octadecimalhq/shellgate",
     "license": "proprietary",
     "authors": [
         {
@@ -35,7 +35,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Octadecimal\\ShellGate\\Tests\\": "tests/"
+            "OctadecimalHQ\\ShellGate\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -46,13 +46,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Octadecimal\\ShellGate\\": "src/"
+            "OctadecimalHQ\\ShellGate\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Octadecimal\\ShellGate\\ShellGateServiceProvider"
+                "OctadecimalHQ\\ShellGate\\ShellGateServiceProvider"
             ]
         }
     },

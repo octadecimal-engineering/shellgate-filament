@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Octadecimal\ShellGate\Http\Controllers\TerminalTokenController;
-use Octadecimal\ShellGate\Http\Controllers\TerminalSessionController;
-use Octadecimal\ShellGate\Http\Middleware\EnsureTerminalAccess;
+use OctadecimalHQ\ShellGate\Http\Controllers\TerminalTokenController;
+use OctadecimalHQ\ShellGate\Http\Controllers\TerminalSessionController;
+use OctadecimalHQ\ShellGate\Http\Middleware\EnsureTerminalAccess;
 
 /*
 |--------------------------------------------------------------------------

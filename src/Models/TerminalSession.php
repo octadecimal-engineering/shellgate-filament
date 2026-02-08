@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Models;
+namespace OctadecimalHQ\ShellGate\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

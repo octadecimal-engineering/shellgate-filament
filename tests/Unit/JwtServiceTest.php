@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Tests\Unit;
+namespace OctadecimalHQ\ShellGate\Tests\Unit;
 
-use Octadecimal\ShellGate\Services\JwtService;
-use Octadecimal\ShellGate\Tests\TestCase;
+use OctadecimalHQ\ShellGate\Services\JwtService;
+use OctadecimalHQ\ShellGate\Tests\TestCase;
 
 class JwtServiceTest extends TestCase
 {

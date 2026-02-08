@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Console;
+namespace OctadecimalHQ\ShellGate\Console;
 
 use Illuminate\Console\Command;
-use Octadecimal\ShellGate\Services\LicenseService;
+use OctadecimalHQ\ShellGate\Services\LicenseService;
 
 /**
  * Artisan command to check and manage Shell Gate license.

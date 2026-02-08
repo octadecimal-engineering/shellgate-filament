@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Services;
+namespace OctadecimalHQ\ShellGate\Services;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Http\Controllers;
+namespace OctadecimalHQ\ShellGate\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Octadecimal\ShellGate\Models\TerminalSession;
-use Octadecimal\ShellGate\Services\AuditService;
-use Octadecimal\ShellGate\Services\JwtService;
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Services\AuditService;
+use OctadecimalHQ\ShellGate\Services\JwtService;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 /**
  * Controller for terminal token generation.

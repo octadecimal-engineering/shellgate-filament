@@ -571,8 +571,8 @@ client.connect(document.getElementById('terminal'));
 ### PHP (Programmatic Token Generation)
 
 ```php
-use Octadecimal\ShellGate\Services\JwtService;
-use Octadecimal\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Services\JwtService;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
 
 class TerminalApiController extends Controller
 {

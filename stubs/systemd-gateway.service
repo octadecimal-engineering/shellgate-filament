@@ -13,7 +13,7 @@
 
 [Unit]
 Description=Shell Gate Terminal Gateway
-Documentation=https://github.com/octadecimalhq/shell-gate
+Documentation=https://github.com/octadecimalhq/shellgate
 After=network.target
 
 [Service]

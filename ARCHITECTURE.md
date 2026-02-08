@@ -368,7 +368,7 @@ bash → PTY stdout → Gateway → WebSocket → Browser
 ## Plugin Structure
 
 ```
-packages/octadecimal/shell-gate/
+packages/octadecimalhq/shellgate/
 ├── composer.json
 ├── package.json                      # Gateway dependencies
 ├── LICENSE.md
@@ -511,7 +511,7 @@ spec:
     spec:
       containers:
       - name: gateway
-        image: octadecimal/shell-gate-gateway:latest
+        image: octadecimalhq/shellgate-gateway:latest
         ports:
         - containerPort: 7681
         env:

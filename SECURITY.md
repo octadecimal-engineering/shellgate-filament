@@ -135,7 +135,7 @@ Terminal access requires explicit authorization via the `->authorize()` callback
 
 ```php
 // ShellGatePlugin configuration in AdminPanelProvider.php
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 ShellGatePlugin::make()
     ->authorize(function (): bool {
@@ -416,7 +416,7 @@ function spawnTerminalContainer(sessionId) {
         --cpus 0.5 \
         --network none \
         -v /var/www/app:/app:ro \
-        octadecimal/terminal-sandbox \
+        octadecimalhq/terminal-sandbox \
         tail -f /dev/null
     `);
     
@@ -431,7 +431,7 @@ function spawnTerminalContainer(sessionId) {
 # docker-compose.yml for terminal sandbox
 services:
   terminal-sandbox:
-    image: octadecimal/terminal-sandbox
+    image: octadecimalhq/terminal-sandbox
     read_only: true
     cap_drop:
       - ALL

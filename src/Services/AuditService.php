@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Services;
+namespace OctadecimalHQ\ShellGate\Services;
 
 use Illuminate\Support\Facades\Log;
-use Octadecimal\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
 
 /**
  * Service for audit logging of terminal sessions.

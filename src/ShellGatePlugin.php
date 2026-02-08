@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate;
+namespace OctadecimalHQ\ShellGate;
 
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
-use Octadecimal\ShellGate\Filament\Pages\TerminalPage;
+use OctadecimalHQ\ShellGate\Filament\Pages\TerminalPage;
 
 /**
  * Filament plugin for Shell Gate terminal.
@@ -19,8 +19,10 @@ class ShellGatePlugin implements Plugin
 
     /**
      * Authorization callback.
+     *
+     * null = use default authorization (local: any auth user, production: is_super_admin / Spatie).
      */
-    protected Closure|bool $authorizeUsing = true;
+    protected Closure|bool|null $authorizeUsing = null;
 
     /**
      * Navigation group.
@@ -101,7 +103,7 @@ class ShellGatePlugin implements Plugin
     /**
      * Set authorization callback.
      */
-    public function authorize(Closure|bool $callback): static
+    public function authorize(Closure|bool|null $callback): static
     {
         $this->authorizeUsing = $callback;
 
@@ -110,10 +112,42 @@ class ShellGatePlugin implements Plugin
 
     /**
      * Check if user is authorized.
+     *
+     * When no authorize callback is set (null), uses smart defaults:
+     * - local/testing: any authenticated user
+     * - production: is_super_admin attribute or Spatie super_admin role
      */
     public function isAuthorized(): bool
     {
-        return $this->evaluate($this->authorizeUsing) === true;
+        // If explicitly configured, use that
+        if ($this->authorizeUsing !== null) {
+            return $this->evaluate($this->authorizeUsing) === true;
+        }
+
+        // Smart default
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        // In local/testing: allow any authenticated user
+        if (app()->environment(['local', 'testing'])) {
+            return true;
+        }
+
+        // Check for super_admin attribute
+        if ($user->is_super_admin ?? false) {
+            return true;
+        }
+
+        // Check for Spatie role
+        if (method_exists($user, 'hasRole')) {
+            /** @phpstan-ignore-next-line */
+            return $user->hasRole('super_admin');
+        }
+
+        return false;
     }
 
     /**

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Filament\Pages;
+namespace OctadecimalHQ\ShellGate\Filament\Pages;
 
 use Filament\Panel;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 /**
  * Filament page for terminal interface.
@@ -96,6 +96,9 @@ class TerminalPage extends Page
 
     /**
      * Check if user can access this page.
+     *
+     * In local/testing: any authenticated user.
+     * In production: requires explicit authorization (is_super_admin / Spatie / custom callback).
      */
     public static function canAccess(): bool
     {
@@ -109,7 +112,23 @@ class TerminalPage extends Page
                 return false;
             }
 
-            return $user->is_super_admin ?? false;
+            // In local/testing: allow any authenticated user
+            if (app()->environment(['local', 'testing'])) {
+                return true;
+            }
+
+            // Check is_super_admin attribute
+            if ($user->is_super_admin ?? false) {
+                return true;
+            }
+
+            // Check Spatie role
+            if (method_exists($user, 'hasRole')) {
+                /** @phpstan-ignore-next-line */
+                return $user->hasRole('super_admin');
+            }
+
+            return false;
         }
     }
 

@@ -101,5 +101,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Audit trail for all terminal sessions
 - Configurable secrets redaction in logs
 
-[Unreleased]: https://github.com/octadecimalhq/shell-gate/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/octadecimalhq/shell-gate/releases/tag/v1.0.0
+[Unreleased]: https://github.com/octadecimalhq/shellgate/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/octadecimalhq/shellgate/releases/tag/v1.0.0

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Tests\Unit;
+namespace OctadecimalHQ\ShellGate\Tests\Unit;
 
-use Octadecimal\ShellGate\Models\TerminalSession;
-use Octadecimal\ShellGate\Tests\Fixtures\User;
-use Octadecimal\ShellGate\Tests\TestCase;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Tests\Fixtures\User;
+use OctadecimalHQ\ShellGate\Tests\TestCase;
 use PHPUnit\Framework\Assert;
 
 class TerminalSessionTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Services;
+namespace OctadecimalHQ\ShellGate\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -62,7 +62,7 @@ class LicenseService
             return [
                 'valid' => false,
                 'status' => 'missing_api_key',
-                'message' => 'Anystack API key not configured. Set ANYSTACK_CUSTOMER_API_KEY in your .env file. See: https://octadecimal.engineering/shell-gate/docs',
+                'message' => 'Anystack API key not configured. Set ANYSTACK_CUSTOMER_API_KEY in your .env file. See: https://github.com/octadecimalhq/shellgate',
                 'cached' => false,
             ];
         }
@@ -178,12 +178,12 @@ class LicenseService
                     'SUSPENDED' => [
                         'valid' => false,
                         'status' => 'suspended',
-                        'message' => 'License has been suspended. Contact support@octadecimal.engineering.',
+                        'message' => 'License has been suspended. Contact support@octadecimalhq.com.',
                     ],
                     'EXPIRED' => [
                         'valid' => false,
                         'status' => 'expired',
-                        'message' => 'License has expired. Renew at https://octadecimal.engineering/shell-gate',
+                        'message' => 'License has expired. Renew your license via Anystack.',
                     ],
                     default => [
                         'valid' => false,
