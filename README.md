@@ -7,7 +7,7 @@
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-purple)](https://php.net)
 [![License: Commercial](https://img.shields.io/badge/License-Commercial-green)](LICENSE-COMMERCIAL.md)
 
-**Repository:** [github.com/octadecimal-engineering/shellgate-filament](https://github.com/octadecimal-engineering/shellgate-filament)
+**Repository:** [github.com/octadecimalhq/shellgate](https://github.com/octadecimalhq/shellgate)
 
 Shell Gate is a **standalone** product. It may be developed or tested inside another workspace (e.g. via Composer path repository) but has no dependency on that workspace.
 
@@ -74,145 +74,65 @@ Shell Gate is a **standalone** product. It may be developed or tested inside ano
 
 ## Quick Start
 
-### Option: one-shot install script
-
-If the package is already installed (Composer path repo or private repo), you can run the install script from your **Laravel project root**:
-
-```bash
-bash vendor/octadecimal/shell-gate/install.sh
-# or, with path repo:  bash packages/octadecimal/shell-gate/install.sh
-```
-
-It publishes config, runs migrations, prepares the gateway `.env` and runs `npm install`. **The script will prompt you for your license key**, which will be saved to your `.env` file as `SHELL_GATE_LICENSE_KEY`. You still need to register the plugin and start the gateway — the script prints the exact next steps. See [INSTALLATION.md — Quick install via script](INSTALLATION.md#quick-install-via-script) for the full path.
-
----
-
 ### 1. Install the Package
 
-Shell Gate is **not on Packagist**. Use one of these options:
+Shell Gate is distributed via **[Anystack](https://anystack.sh)**. After purchase you will receive a license key.
 
-**Option A — Path repository (local development / testing):**
-
-1. Place the package at `./packages/octadecimal/shell-gate` (e.g. unzip a release into that path so it contains `composer.json`, `src/`, etc.).
-2. In your application’s `composer.json` add:
+**Add the Anystack Composer repository** to your `composer.json`:
 
 ```json
 {
     "repositories": [
         {
-            "type": "path",
-            "url": "./packages/octadecimal/shell-gate"
+            "type": "composer",
+            "url": "https://satis.anystack.sh/octadecimalhq"
         }
     ]
 }
 ```
 
-3. Install. If your app has `"minimum-stability": "stable"`, use `@dev`:
+**Authenticate** with your license key:
 
 ```bash
-composer require octadecimal/shell-gate:@dev
+composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
 ```
 
-Otherwise:
+**Install:**
 
 ```bash
-composer require octadecimal/shell-gate
+composer require octadecimalhq/shellgate
 ```
 
-**Option B — After purchase (private repo or Anystack):**
+> **Local development (path repository):** Place the package at `./packages/octadecimalhq/shellgate` and add a path repository instead:
+> ```json
+> {"type": "path", "url": "./packages/octadecimalhq/shellgate"}
+> ```
+> Then: `composer require octadecimalhq/shellgate:@dev`
 
-Add the Composer repository you received (URL + auth if required), then:
+### 2. Run the Installer
 
 ```bash
-composer require octadecimal/shell-gate
+php artisan shellgate:install
 ```
 
-### 2. Publish Configuration
+This single command:
+- Publishes configuration
+- Runs database migrations
+- Registers `ShellGatePlugin` in your `AdminPanelProvider.php`
+- Configures gateway `.env` (JWT secret, working directory)
+- Installs gateway npm dependencies
+
+> **Development mode:** Use `php artisan shellgate:install --dev` to skip license prompts. In `local` environment, any authenticated user can access the terminal automatically.
+
+### 3. Start the Terminal Gateway
 
 ```bash
-php artisan vendor:publish --tag=shell-gate-config
+php artisan shellgate:serve
 ```
 
-### 3. Run Migrations
+Visit `/admin/terminal` in your browser.
 
-```bash
-php artisan migrate
-```
-
-If you use the default `authorize(fn () => auth()->user()?->is_super_admin)` callback:
-
-```bash
-# Add is_super_admin column to users table
-php artisan vendor:publish --tag=shell-gate-user-migration
-php artisan migrate
-```
-
-Add the boolean cast to `app/Models/User.php` (required!):
-
-```php
-protected function casts(): array
-{
-    return [
-        // ... existing casts
-        'is_super_admin' => 'boolean',
-    ];
-}
-```
-
-Grant access to users via tinker/seeder: `User::first()->update(['is_super_admin' => true])`
-
-### 4. Start Terminal Gateway
-
-```bash
-# Using npm (development)
-cd vendor/octadecimal/shell-gate/gateway
-npm install   # postinstall fixes PTY permissions on macOS (avoids "code 4006")
-npm start
-
-# Using Docker (production)
-docker run -d \
-  --name shell-gate-gateway \
-  -p 7681:7681 \
-  -e JWT_SECRET=your-laravel-app-key \
-  octadecimal/shell-gate-gateway
-```
-
-### 5. Register Plugin and add Terminal to the sidebar
-
-```php
-// app/Providers/Filament/AdminPanelProvider.php
-
-use Octadecimal\ShellGate\ShellGatePlugin;
-
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        // ...
-        ->plugin(
-            ShellGatePlugin::make()
-                ->authorize(fn () => auth()->user()?->is_super_admin)
-                ->navigationGroup('System')   // left sidebar group
-                ->navigationLabel('Terminal') // menu label
-        );
-}
-```
-
-The Terminal link appears in the admin **left sidebar** under the group you set (e.g. "System"). You can customize group, label, icon, and sort order; see [Installation → Adding the Terminal to the sidebar](INSTALLATION.md#adding-the-terminal-to-the-sidebar-left-menu).
-
-### 6. Configure Nginx (Production)
-
-```nginx
-# WebSocket proxy for terminal
-location /ws/terminal {
-    proxy_pass http://127.0.0.1:7681;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_read_timeout 86400;
-}
-```
+> **Production:** Use systemd, PM2, or Docker instead of `artisan shellgate:serve`. See [Installation Guide](INSTALLATION.md#gateway-setup) for details.
 
 ---
 

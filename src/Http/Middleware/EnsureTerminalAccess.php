@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Http\Middleware;
+namespace OctadecimalHQ\ShellGate\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Octadecimal\ShellGate\Services\AuditService;
-use Octadecimal\ShellGate\Services\LicenseService;
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\Services\AuditService;
+use OctadecimalHQ\ShellGate\Services\LicenseService;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -74,6 +74,9 @@ class EnsureTerminalAccess
 
     /**
      * Default authorization check when plugin is not available.
+     *
+     * In local/testing environments: any authenticated user gets access.
+     * In production: requires is_super_admin attribute or Spatie super_admin role.
      */
     private function defaultAuthorization(): bool
     {
@@ -81,6 +84,11 @@ class EnsureTerminalAccess
 
         if (! $user) {
             return false;
+        }
+
+        // In local/testing: allow any authenticated user
+        if (app()->environment(['local', 'testing'])) {
+            return true;
         }
 
         // Check for super_admin attribute

@@ -12,12 +12,12 @@ return [
     |
     | REQUIRED for production:
     | 1. SHELL_GATE_LICENSE_KEY - Your license key (from purchase confirmation)
-    | 2. ANYSTACK_CUSTOMER_API_KEY - Runtime API key (from octadecimal.engineering docs)
+    | 2. ANYSTACK_CUSTOMER_API_KEY - Runtime API key (from installation docs)
     |
     | The runtime API key has minimal permissions (validate/activate only)
     | and is safe to use in your application.
     |
-    | Purchase: https://octadecimal.engineering/shell-gate
+    | Purchase via Anystack: https://anystack.sh
     | License types: Single Site ($99), Unlimited ($299), Agency ($499)
     |
     */
@@ -32,7 +32,7 @@ return [
         // The customer API key is provided in installation docs (minimal permissions)
         'anystack' => [
             // Customer runtime API key (license:validate, license:activate only)
-            // Get this from: https://octadecimal.engineering/shell-gate/docs/installation
+            // Get this from: https://github.com/octadecimalhq/shellgate
             'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
 
             // Product ID (public, safe to hardcode)

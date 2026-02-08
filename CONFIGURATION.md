@@ -32,7 +32,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Shell Gate uses Anystack for license verification at runtime.
-    | Purchase a license at: https://octadecimal.engineering/shell-gate
+    | Purchase via Anystack: https://anystack.sh
     |
     | Verification is cached for 24 hours and skipped in local/testing.
     |
@@ -328,7 +328,7 @@ SHELL_GATE_LOG_OUTPUT=false
 Configure the plugin when registering in `AdminPanelProvider`:
 
 ```php
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 ->plugin(
     ShellGatePlugin::make()

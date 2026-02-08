@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Tests\Fixtures;
+namespace OctadecimalHQ\ShellGate\Tests\Fixtures;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;

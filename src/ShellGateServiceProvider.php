@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate;
+namespace OctadecimalHQ\ShellGate;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -62,10 +62,40 @@ class ShellGateServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
             $this->commands([
+                Console\InstallCommand::class,
+                Console\ServeCommand::class,
                 Console\CloseSessionsCommand::class,
                 Console\LicenseStatusCommand::class,
             ]);
+
+            // Hint: show install reminder after `composer require` (first run only)
+            $this->showInstallHintIfNeeded();
         }
+    }
+
+    /**
+     * Show a one-time install hint when the package is first required.
+     *
+     * Detects "first boot" by checking if config/shell-gate.php has been published.
+     * Only displays during `composer require` / `composer update` (not artisan commands).
+     */
+    protected function showInstallHintIfNeeded(): void
+    {
+        // Only show if config is not published yet (fresh install)
+        if (file_exists(config_path('shell-gate.php'))) {
+            return;
+        }
+
+        // Only show during package discovery (not during artisan commands)
+        $command = $_SERVER['argv'][0] ?? '';
+        if (! str_contains($command, 'composer')) {
+            return;
+        }
+
+        echo "\n";
+        echo "  \033[32m✓ Shell Gate installed.\033[0m\n";
+        echo "  Run \033[36mphp artisan shellgate:install\033[0m to complete setup.\n";
+        echo "\n";
     }
 
     /**

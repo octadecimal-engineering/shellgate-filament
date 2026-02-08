@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Tests;
+namespace OctadecimalHQ\ShellGate\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Octadecimal\ShellGate\ShellGateServiceProvider;
+use OctadecimalHQ\ShellGate\ShellGateServiceProvider;
 
 /**
  * Base test case for Shell Gate tests.

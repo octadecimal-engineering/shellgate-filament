@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Console;
+namespace OctadecimalHQ\ShellGate\Console;
 
-use Octadecimal\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
 
 class CloseSessionsCommand extends \Illuminate\Console\Command
 {

@@ -20,8 +20,8 @@ set -e
 # ------------------------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------------------------
-PACKAGE_NAME="octadecimal/shell-gate"
-PACKAGE_PATH="./packages/octadecimal/shell-gate"
+PACKAGE_NAME="octadecimalhq/shellgate"
+PACKAGE_PATH="./packages/octadecimalhq/shellgate"
 MIN_PHP_VERSION="8.2"
 SUPPORTED_LARAVEL="11|12"
 MIN_NODE_VERSION="18"
@@ -190,7 +190,7 @@ setup_composer() {
     print_step "2/6" "Configuring Composer..."
 
     # Add path repository if not already present
-    if grep -q "packages/octadecimal/shell-gate" composer.json 2>/dev/null; then
+    if grep -q "packages/octadecimalhq/shellgate" composer.json 2>/dev/null; then
         print_success "Repository already configured"
     else
         composer config repositories.shell-gate path "$PACKAGE_PATH" --no-interaction 2>/dev/null
@@ -198,7 +198,7 @@ setup_composer() {
     fi
 
     # Require package if not already installed
-    if grep -q '"octadecimal/shell-gate"' composer.json 2>/dev/null; then
+    if grep -q '"octadecimalhq/shellgate"' composer.json 2>/dev/null; then
         print_success "Package already in composer.json"
     else
         print_warning "Installing package (this may take a moment)..."
@@ -244,7 +244,7 @@ run_migrations() {
 setup_gateway() {
     print_step "5/6" "Setting up terminal gateway..."
 
-    GATEWAY_DIR="vendor/octadecimal/shell-gate/gateway"
+    GATEWAY_DIR="vendor/octadecimalhq/shellgate/gateway"
 
     if [[ ! -d "$GATEWAY_DIR" ]]; then
         GATEWAY_DIR="$PACKAGE_PATH/gateway"
@@ -324,7 +324,7 @@ setup_license() {
     else
         echo ""
         echo -e "    ${YELLOW}Shell Gate requires a license key for production use.${NC}"
-        echo "    Purchase at: https://octadecimal.engineering/shell-gate"
+        echo "    Purchase at: https://anystack.sh"
         echo ""
         echo -n "    Enter license key (or press Enter to skip): "
 
@@ -358,7 +358,7 @@ print_instructions() {
     echo ""
     echo "  1. Register the plugin in your AdminPanelProvider.php:"
     echo ""
-    echo -e "     ${BLUE}use Octadecimal\\ShellGate\\ShellGatePlugin;${NC}"
+    echo -e "     ${BLUE}use OctadecimalHQ\\ShellGate\\ShellGatePlugin;${NC}"
     echo ""
     echo "     ->plugin("
     echo "         ShellGatePlugin::make()"
@@ -380,7 +380,7 @@ print_instructions() {
     echo ""
     echo "  4. Start the terminal gateway:"
     echo ""
-    echo -e "     ${BLUE}cd vendor/octadecimal/shell-gate/gateway && npm start${NC}"
+        echo -e "     ${BLUE}cd vendor/octadecimalhq/shellgate/gateway && npm start${NC}"
     echo ""
     echo "  5. Visit /admin/terminal"
     echo ""

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Octadecimal\ShellGate\Tests\Feature;
+namespace OctadecimalHQ\ShellGate\Tests\Feature;
 
-use Octadecimal\ShellGate\Models\TerminalSession;
-use Octadecimal\ShellGate\Tests\Fixtures\User;
-use Octadecimal\ShellGate\Tests\TestCase;
+use OctadecimalHQ\ShellGate\Models\TerminalSession;
+use OctadecimalHQ\ShellGate\Tests\Fixtures\User;
+use OctadecimalHQ\ShellGate\Tests\TestCase;
 
 class TerminalTokenControllerTest extends TestCase
 {

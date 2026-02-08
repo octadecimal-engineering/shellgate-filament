@@ -7,7 +7,7 @@ Shell Gate installation guide for all deployment scenarios.
 ## Table of Contents
 
 **Getting Started**
-1. [Quick Start (5 minutes)](#quick-start) — Local development
+1. [Quick Start (3 commands)](#quick-start) — Local development
 2. [Requirements](#requirements)
 
 **Full Installation**
@@ -20,14 +20,15 @@ Shell Gate installation guide for all deployment scenarios.
 7. [Nginx Configuration](#nginx-configuration)
 
 **Reference**
-8. [Verification](#verification)
-9. [Troubleshooting](#troubleshooting)
+8. [Artisan Commands](#artisan-commands)
+9. [Verification](#verification)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Quick Start
 
-For local development — get a working terminal in 5 minutes.
+For local development — get a working terminal in under 2 minutes.
 
 ### Prerequisites
 
@@ -37,72 +38,42 @@ For local development — get a working terminal in 5 minutes.
 ### 1. Install Package
 
 ```bash
-# Add path repository to composer.json (if using ZIP distribution)
-# "repositories": [{"type": "path", "url": "./packages/octadecimal/shell-gate"}]
+# Add Anystack repository to composer.json
+# "repositories": [{"type": "composer", "url": "https://satis.anystack.sh/octadecimalhq"}]
 
-composer require octadecimal/shell-gate:@dev
+composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
+composer require octadecimalhq/shellgate
 ```
+
+> **Local development (path repository):**
+> ```bash
+> # "repositories": [{"type": "path", "url": "./packages/octadecimalhq/shellgate"}]
+> composer require octadecimalhq/shellgate:@dev
+> ```
 
 ### 2. Run Installer
 
 ```bash
-bash vendor/octadecimal/shell-gate/install.sh
+php artisan shellgate:install
 ```
 
-The installer will:
-- Publish configuration
-- Run migrations
-- Configure gateway (JWT secret, working directory)
-- Prompt for license key (optional for local dev)
+The installer automatically:
+- Publishes `config/shell-gate.php`
+- Runs database migrations
+- Registers `ShellGatePlugin` in your `AdminPanelProvider.php`
+- Adds `SHELL_GATE_GATEWAY_URL` to your `.env`
+- Creates gateway `.env` (JWT secret, working directory)
+- Installs gateway npm dependencies
 
-### 3. Register Plugin
+> **Tip:** In `local` environment, any authenticated user can access the terminal — no extra setup needed.
 
-Edit `app/Providers/Filament/AdminPanelProvider.php`:
-
-```php
-use Octadecimal\ShellGate\ShellGatePlugin;
-
-->plugin(
-    ShellGatePlugin::make()
-        ->authorize(fn () => auth()->user()?->is_super_admin)
-)
-```
-
-### 4. Setup User Access
-
-The default authorization checks `is_super_admin` attribute. Add it to your User model:
+### 3. Start Gateway & Test
 
 ```bash
-php artisan vendor:publish --tag=shell-gate-user-migration
-php artisan migrate
+php artisan shellgate:serve
 ```
 
-Add cast to `app/Models/User.php`:
-
-```php
-protected function casts(): array
-{
-    return [
-        // ... existing casts
-        'is_super_admin' => 'boolean',
-    ];
-}
-```
-
-Grant access to a user:
-
-```bash
-php artisan tinker
->>> User::first()->update(['is_super_admin' => true])
-```
-
-### 5. Start Gateway & Test
-
-```bash
-cd vendor/octadecimal/shell-gate/gateway && npm install && npm start
-```
-
-Visit `/admin/terminal` in your browser.
+Visit `/admin/terminal` in your browser. That's it!
 
 ---
 
@@ -137,35 +108,40 @@ npm install -g node-gyp
 
 ## Step-by-Step Installation
 
-Detailed installation for full control over each step.
+Manual installation for full control over each step. The `shellgate:install` command automates all of this — use manual steps only if you need fine-grained control.
 
 ### Step 1: Add Composer Repository
 
-Shell Gate is distributed outside Packagist. Add a repository to `composer.json`:
-
-**From ZIP archive:**
+Shell Gate is distributed via **[Anystack](https://anystack.sh)**. Add the Anystack Composer repository to your `composer.json`:
 
 ```json
 {
     "repositories": [
         {
-            "type": "path",
-            "url": "./packages/octadecimal/shell-gate"
+            "type": "composer",
+            "url": "https://satis.anystack.sh/octadecimalhq"
         }
     ]
 }
 ```
 
-Extract the ZIP contents into `packages/octadecimal/shell-gate/`.
+Authenticate with your license key:
 
-**Private repository (after purchase):**
+```bash
+composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
+```
 
-Use the repository URL provided in your purchase confirmation.
+> **Local development (path repository):**
+>
+> Extract the package to `packages/octadecimalhq/shellgate/` and add a path repository instead:
+> ```json
+> {"type": "path", "url": "./packages/octadecimalhq/shellgate"}
+> ```
 
 ### Step 2: Install Package
 
 ```bash
-composer require octadecimal/shell-gate:@dev
+composer require octadecimalhq/shellgate
 ```
 
 > **Note:** Use `:@dev` suffix when using path repository with `minimum-stability: stable`.
@@ -204,7 +180,7 @@ ANYSTACK_CUSTOMER_API_KEY=8AE4QSBwTGwiPyrSvmw6vozlPbbkZr7J
 Edit `app/Providers/Filament/AdminPanelProvider.php`:
 
 ```php
-use Octadecimal\ShellGate\ShellGatePlugin;
+use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -212,20 +188,17 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             // ... other config
-            ->plugin(
-                ShellGatePlugin::make()
-                    ->authorize(fn () => auth()->user()?->is_super_admin)
-                    ->navigationGroup('System')
-                    ->navigationLabel('Terminal')
-            );
+            ->plugin(ShellGatePlugin::make());
     }
 }
 ```
 
+> **Note:** In `local`/`testing` environments, any authenticated user has access by default. For production authorization options, see [Authorization Setup](#authorization-setup).
+
 ### Step 7: Setup Gateway
 
 ```bash
-cd vendor/octadecimal/shell-gate/gateway
+cd vendor/octadecimalhq/shellgate/gateway
 cp .env.example .env
 npm install
 ```
@@ -238,25 +211,37 @@ JWT_SECRET=your-laravel-app-key  # Must match APP_KEY
 DEFAULT_CWD=/path/to/your/laravel/project
 ```
 
-> **Tip:** The install script (`install.sh`) configures this automatically.
+> **Tip:** `php artisan shellgate:install` and `php artisan shellgate:serve` handle this automatically.
 
-### Step 8: Clear Caches
+### Step 8: Start Gateway
 
 ```bash
-php artisan config:clear
-php artisan view:clear
-php artisan route:clear
+php artisan shellgate:serve
+```
+
+Or manually:
+
+```bash
+cd vendor/octadecimalhq/shellgate/gateway && node index.js
 ```
 
 ---
 
 ## Authorization Setup
 
-Shell Gate uses a flexible authorization system. Choose one approach:
+Shell Gate uses a flexible authorization system with smart defaults.
 
-### Option A: is_super_admin Attribute (Default)
+### Default Behavior (Zero Config)
 
-The simplest approach — add a boolean column to users table.
+Without any `->authorize()` configuration:
+- **`local`/`testing`:** Any authenticated user can access the terminal
+- **`production`:** Requires `is_super_admin` attribute or Spatie `super_admin` role
+
+This means **no authorization setup is needed for local development**.
+
+### Option A: is_super_admin Attribute (Production)
+
+Add a boolean column to users table:
 
 **1. Publish and run migration:**
 
@@ -288,7 +273,7 @@ php artisan tinker
 >>> User::where('email', 'admin@example.com')->update(['is_super_admin' => true])
 ```
 
-**4. Register plugin:**
+**4. Register plugin with explicit authorize:**
 
 ```php
 ->plugin(
@@ -336,12 +321,6 @@ Use any logic you need:
 )
 ```
 
-### Default Behavior (No Callback)
-
-If you don't specify `->authorize()`, Shell Gate checks:
-1. `is_super_admin` attribute (if exists)
-2. Spatie `super_admin` role (if Spatie is installed)
-
 ---
 
 ## License Configuration
@@ -380,7 +359,7 @@ php artisan shell-gate:license --refresh  # Force re-validation
 | Status | Action |
 |--------|--------|
 | `valid` | None required |
-| `expired` | Renew at octadecimal.engineering |
+| `expired` | Renew your license via Anystack |
 | `activation_limit` | Upgrade license or deactivate another domain |
 | `missing_key` | Add `SHELL_GATE_LICENSE_KEY` to .env |
 
@@ -393,7 +372,15 @@ The terminal gateway is a Node.js process managing PTY sessions.
 ### Local Development
 
 ```bash
-cd vendor/octadecimal/shell-gate/gateway
+php artisan shellgate:serve
+```
+
+This auto-detects the gateway path, installs dependencies if needed, and starts the server.
+
+Alternatively, start manually:
+
+```bash
+cd vendor/octadecimalhq/shellgate/gateway
 npm install
 npm start
 ```
@@ -410,7 +397,7 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/app/vendor/octadecimal/shell-gate/gateway
+WorkingDirectory=/var/www/app/vendor/octadecimalhq/shellgate/gateway
 ExecStart=/usr/bin/node index.js
 Restart=on-failure
 RestartSec=10
@@ -435,7 +422,7 @@ sudo systemctl start shell-gate-gateway
 
 ```bash
 npm install -g pm2
-cd vendor/octadecimal/shell-gate/gateway
+cd vendor/octadecimalhq/shellgate/gateway
 pm2 start index.js --name shell-gate-gateway
 pm2 save
 pm2 startup
@@ -452,7 +439,7 @@ docker run -d \
   -e ALLOWED_ORIGINS="https://yourdomain.com" \
   -e DEFAULT_CWD="/app" \
   -v $(pwd):/app:ro \
-  octadecimal/shell-gate-gateway
+  octadecimalhq/shellgate-gateway
 ```
 
 Or use Docker Compose — see `gateway/docker-compose.yml`.
@@ -514,6 +501,42 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
+## Artisan Commands
+
+| Command | Description |
+|---------|-------------|
+| `shellgate:install` | One-command installer (config, migrations, plugin registration, gateway) |
+| `shellgate:serve` | Start the terminal gateway (development) |
+| `shell-gate:license` | Check license status |
+| `shell-gate:close-sessions` | Close active terminal sessions |
+
+### shellgate:install
+
+```bash
+php artisan shellgate:install [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--dev` | Development mode (skip license prompts) |
+| `--no-migrate` | Skip database migrations |
+| `--no-gateway` | Skip gateway setup (npm install) |
+| `--force` | Overwrite existing configuration |
+
+### shellgate:serve
+
+```bash
+php artisan shellgate:serve [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--port=7681` | Port to listen on |
+| `--host=127.0.0.1` | Host to bind to |
+| `--install` | Force npm install before starting |
+
+---
+
 ## Verification
 
 ### Check Gateway Status
@@ -527,12 +550,15 @@ pm2 status
 
 # Port listening
 ss -tlnp | grep 7681
+
+# Health endpoint
+curl http://127.0.0.1:7681/health
 ```
 
 ### Test from Browser
 
 1. Log in to Filament admin panel
-2. Navigate to **System > Terminal**
+2. Navigate to **System > Terminal** (or whatever label you configured)
 3. Type `whoami` and press Enter
 4. Verify the response
 
@@ -556,7 +582,7 @@ pm2 logs shell-gate-gateway
 
 **Fix:**
 ```bash
-cd vendor/octadecimal/shell-gate/gateway
+cd vendor/octadecimalhq/shellgate/gateway
 npm install  # Postinstall script fixes permissions
 ```
 
@@ -567,9 +593,11 @@ chmod +x node_modules/node-pty/prebuilds/darwin-*/spawn-helper
 
 ### Terminal not visible in sidebar
 
-**Cause:** Authorization failing silently (missing boolean cast).
+**Cause:** Authorization failing silently.
 
-**Fix:** Add cast to User model:
+**Fix (development):** Ensure you are logged in. In `local` environment, any authenticated user has access.
+
+**Fix (production):** Add `is_super_admin` cast to User model:
 ```php
 protected function casts(): array
 {
@@ -583,7 +611,12 @@ protected function casts(): array
 
 **Cause:** JWT_SECRET mismatch between Laravel and gateway.
 
-**Fix:** Ensure gateway `.env` has same key as Laravel `APP_KEY`:
+**Fix:** Re-run the installer or check manually:
+```bash
+php artisan shellgate:install --force --no-migrate
+```
+
+Or ensure gateway `.env` has same key as Laravel `APP_KEY`:
 ```env
 # Gateway .env
 JWT_SECRET=base64:xxxxx  # Same as APP_KEY in Laravel .env
@@ -612,7 +645,7 @@ Or increase limit in `config/shell-gate.php`:
 
 ### Getting Help
 
-1. Check [GitHub Issues](https://github.com/octadecimal-engineering/shellgate-filament/issues)
+1. Check [GitHub Issues](https://github.com/octadecimalhq/shellgate/issues)
 2. Email: support@octadecimal.engineering (license holders)
 
 ---
