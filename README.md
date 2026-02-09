@@ -2,7 +2,7 @@
 
 **A real bash terminal in your Filament admin panel — powered by PTY + WebSocket.**
 
-[![Filament v3/v5](https://img.shields.io/badge/Filament-v3%20%7C%20v5-blue)](https://filamentphp.com)
+[![Filament v3/v4/v5](https://img.shields.io/badge/Filament-v3%20%7C%20v4%20%7C%20v5-blue)](https://filamentphp.com)
 [![Laravel 11+](https://img.shields.io/badge/Laravel-11%2B-red)](https://laravel.com)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-purple)](https://php.net)
 [![License: Commercial](https://img.shields.io/badge/License-Commercial-green)](LICENSE-COMMERCIAL.md)
@@ -66,7 +66,7 @@ Shell Gate is a **standalone** product. It may be developed or tested inside ano
 |-----------|---------|
 | PHP | 8.2+ |
 | Laravel | 11.28+ |
-| Filament | 3.0+ or 5.0+ |
+| Filament | 3.0+ / 4.0+ / 5.0+ |
 | Livewire | 4.0+ |
 | Node.js | 18+ (for Terminal Gateway) |
 
@@ -85,16 +85,16 @@ Shell Gate is distributed via **[Anystack](https://anystack.sh)**. After purchas
     "repositories": [
         {
             "type": "composer",
-            "url": "https://satis.anystack.sh/octadecimalhq"
+            "url": "https://shellgate.composer.sh"
         }
     ]
 }
 ```
 
-**Authenticate** with your license key:
+**Authenticate** with your email and license key:
 
 ```bash
-composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
+composer config http-basic.shellgate.composer.sh YOUR_EMAIL YOUR_LICENSE_KEY
 ```
 
 **Install:**
@@ -214,6 +214,7 @@ This plugin is sold under a commercial license. Each license includes:
 
 - **Single Site License** — Use on one production domain
 - **Unlimited License** — Use on unlimited domains
+- **Agency License** — Use on unlimited client projects
 - **1 Year Updates** — Free updates for 12 months
 - **Priority Support** — Email support with 48h response time
 

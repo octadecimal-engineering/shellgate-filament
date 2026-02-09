@@ -39,9 +39,9 @@ For local development — get a working terminal in under 2 minutes.
 
 ```bash
 # Add Anystack repository to composer.json
-# "repositories": [{"type": "composer", "url": "https://satis.anystack.sh/octadecimalhq"}]
+# "repositories": [{"type": "composer", "url": "https://shellgate.composer.sh"}]
 
-composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
+composer config http-basic.shellgate.composer.sh YOUR_EMAIL YOUR_LICENSE_KEY
 composer require octadecimalhq/shellgate
 ```
 
@@ -119,16 +119,16 @@ Shell Gate is distributed via **[Anystack](https://anystack.sh)**. Add the Anyst
     "repositories": [
         {
             "type": "composer",
-            "url": "https://satis.anystack.sh/octadecimalhq"
+            "url": "https://shellgate.composer.sh"
         }
     ]
 }
 ```
 
-Authenticate with your license key:
+Authenticate with your email and license key:
 
 ```bash
-composer config http-basic.satis.anystack.sh license YOUR_LICENSE_KEY
+composer config http-basic.shellgate.composer.sh YOUR_EMAIL YOUR_LICENSE_KEY
 ```
 
 > **Local development (path repository):**
