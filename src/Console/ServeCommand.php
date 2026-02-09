@@ -7,6 +7,7 @@ namespace OctadecimalHQ\ShellGate\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 /**
  * Start the Shell Gate terminal gateway (Node.js WebSocket server).
@@ -84,7 +85,7 @@ class ServeCommand extends Command
             ->env($env)
             ->timeout(0)  // No timeout — runs until killed
             ->forever()
-            ->tty(Process::isTtySupported())
+            ->tty(SymfonyProcess::isTtySupported())
             ->run("node index.js", function (string $type, string $output): void {
                 $this->output->write($output);
             });
