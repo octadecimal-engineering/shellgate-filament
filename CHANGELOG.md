@@ -7,66 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.1] - 2026-02-05
-
-### Changed
-
-- **Enterprise-safe installer** - Complete rewrite of `install.sh`
-  - Verifies prerequisites (PHP 8.2+, Laravel 11/12, Filament 3+, Node 18+)
-  - Does NOT create users or modify permissions
-  - Does NOT make security decisions
-  - Configures gateway JWT and working directory automatically
-  - License key prompt (optional, required for production)
-  - Clear post-installation instructions with authorization options
-
-- **Simplified INSTALLATION.md** - Restructured for clarity
-  - Quick Start section (5 minutes for local dev)
-  - Clear Authorization Setup section with 3 options (is_super_admin, Spatie, custom)
-  - Separated production deployment sections (Gateway, Nginx, Docker)
-  - Reduced from ~1100 to ~625 lines
-
-### Fixed
-
-- Gateway `DEFAULT_CWD` now set to Laravel project directory (fixes PTY exit on macOS)
-- AuditService graceful fallback when `shell-gate-audit` log channel not configured
-- Documentation: Standardized environment variable naming (`SHELL_GATE_*` prefix)
-- Documentation: Fixed config file path (`config/shell-gate.php`)
-- Documentation: Replaced all `WebTerminalPlugin` references with `ShellGatePlugin`
-- Documentation: Added required `is_super_admin` boolean cast warning
-
-### Security
-
-- Installer no longer modifies user permissions or grants terminal access
-- Access control configured via `->authorize()` callback or default checks
-
-## [1.1.0] - 2026-02-05
-
-### Added
-
-- **License verification via Anystack API**
-  - Runtime license validation on terminal access
-  - Automatic license activation for new domains
-  - 24-hour caching for valid licenses (reduces API calls)
-  - Graceful degradation when API is unavailable
-  - License verification skipped in local/testing environments
-- New `LicenseService` for Anystack API integration
-- New Artisan command: `php artisan shell-gate:license`
-  - Check license status
-  - `--refresh` flag to force re-validation
-- License configuration in `config/shell-gate.php`
-- Updated `install.sh` with license key prompt
-
-### Changed
-
-- Middleware `EnsureTerminalAccess` now checks license validity before user authorization
-- Configuration structure: `license_key` moved to `license.key`
-
-### Security
-
-- License validation prevents unauthorized production use
-- API credentials embedded securely (not exposed to end users)
-
-## [1.0.0] - 2026-02-01
+## [1.0.0] - 2026-02-09
 
 ### Added
 
@@ -81,18 +22,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - xterm.js frontend with fit addon and resize support
 - Docker support for gateway deployment
 - Nginx and systemd configuration stubs
-- Comprehensive security features:
-  - Token expiration (configurable TTL)
-  - IP address binding
-  - User-Agent binding
-  - Rate limiting
-  - Origin validation (CORS)
-  - Idle and session timeouts
-- Filament 5 plugin integration:
-  - Custom authorization callback
-  - Navigation configuration
-  - Gateway URL configuration
-- Full test suite (Unit and Feature tests)
+- **License verification via Anystack API**
+  - Runtime license validation on terminal access
+  - Automatic license activation for new domains
+  - 24-hour caching for valid licenses
+  - Graceful degradation when API is unavailable
+  - License verification skipped in local/testing environments
+- `LicenseService` and Artisan command `php artisan shell-gate:license` (`--refresh` to re-validate)
+- License configuration in `config/shell-gate.php`
+
+### Changed
+
+- **Enterprise-safe installer** – Complete rewrite of `install.sh`
+  - Verifies prerequisites (PHP 8.2+, Laravel 11/12, Filament 3+, Node 18+)
+  - Does NOT create users or modify permissions
+  - Configures gateway JWT and working directory automatically
+  - License key prompt (optional, required for production)
+  - Clear post-installation instructions with authorization options
+- **Simplified INSTALLATION.md** – Quick Start, Authorization Setup (is_super_admin, Spatie, custom), production deployment (Gateway, Nginx, Docker)
+- Middleware `EnsureTerminalAccess` checks license validity before user authorization
+- Configuration: `license_key` moved to `license.key`
+
+### Fixed
+
+- **shellgate:serve** – Use Symfony Process for TTY detection (fixes `Call to undefined method PendingProcess::isTtySupported()` on older Laravel)
+- **Gateway** – `ALLOWED_ORIGINS` empty by default for local dev (avoids CORS issues when unset)
+- Gateway `DEFAULT_CWD` set to Laravel project directory (fixes PTY exit on macOS)
+- AuditService graceful fallback when `shell-gate-audit` log channel not configured
+- Documentation: Standardized `SHELL_GATE_*` env vars, correct config path, `ShellGatePlugin` references, `is_super_admin` boolean cast warning
 
 ### Security
 
@@ -100,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TLS/WSS support via Nginx proxy
 - Audit trail for all terminal sessions
 - Configurable secrets redaction in logs
+- License validation for production use
+- Installer does not modify user permissions; access via `->authorize()` or default checks
 
 [Unreleased]: https://github.com/octadecimalhq/shellgate/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/octadecimalhq/shellgate/releases/tag/v1.0.0
