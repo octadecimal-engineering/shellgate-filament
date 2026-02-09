@@ -23,7 +23,8 @@ return [
     */
     'license' => [
         // Your license key from purchase confirmation (required for production)
-        'key' => env('SHELL_GATE_LICENSE_KEY'),
+        // Accepted env vars: SHELL_GATE_LICENSE_KEY, shellgate-license-key
+        'key' => env('SHELL_GATE_LICENSE_KEY') ?? env('shellgate-license-key'),
 
         // Enable/disable license verification (auto-disabled in local/testing)
         'verify' => env('SHELL_GATE_LICENSE_VERIFY', true),
@@ -32,11 +33,13 @@ return [
         // The customer API key is provided in installation docs (minimal permissions)
         'anystack' => [
             // Customer runtime API key (license:validate, license:activate only)
-            // Get this from: https://github.com/octadecimalhq/shellgate
-            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
+            // Accepted env vars: ANYSTACK_CUSTOMER_API_KEY, shellgate-customer-runtime-api-key, anystack-api-key
+            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY')
+                ?? env('shellgate-customer-runtime-api-key')
+                ?? env('anystack-api-key'),
 
             // Product ID (public, safe to hardcode)
-            'product_id' => 'a100f72b-befe-48b4-a40c-ba1f62d626ff',
+            'product_id' => 'a108fd3f-8389-40f5-beac-a1767ba70724',
         ],
     ],
 
