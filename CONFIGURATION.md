@@ -51,7 +51,7 @@ return [
             'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
 
             // Product ID (public, hardcoded)
-            'product_id' => 'a100f72b-befe-48b4-a40c-ba1f62d626ff',
+            'product_id' => 'a108fd3f-8389-40f5-beac-a1767ba70724',
         ],
     ],
 

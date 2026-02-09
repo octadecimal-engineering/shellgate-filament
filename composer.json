@@ -1,6 +1,5 @@
 {
     "name": "octadecimalhq/shellgate",
-    "version": "1.2.2",
     "description": "Real bash terminal in Filament admin panel — PTY + WebSocket. JWT, audit, wss://.",
     "keywords": [
         "filament",
