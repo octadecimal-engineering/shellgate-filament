@@ -483,7 +483,7 @@ class AuditService
 {
     public function logSessionStart(TerminalSession $session): void
     {
-        Log::channel('terminal-audit')->info('Session started', [
+        Log::channel('shell-gate-audit')->info('Session started', [
             'session_id' => $session->id,
             'user_id' => $session->user_id,
             'ip' => $session->ip_address,
@@ -494,7 +494,7 @@ class AuditService
     public function logCommand(string $sessionId, string $command): void
     {
         if (config('shell-gate.audit.log_commands', true)) {
-            Log::channel('terminal-audit')->info('Command executed', [
+            Log::channel('shell-gate-audit')->info('Command executed', [
                 'session_id' => $sessionId,
                 'command' => $this->sanitizeCommand($command),
             ]);
@@ -518,9 +518,9 @@ class AuditService
 ```php
 // config/logging.php
 'channels' => [
-    'terminal-audit' => [
+    'shell-gate-audit' => [
         'driver' => 'daily',
-        'path' => storage_path('logs/terminal-audit.log'),
+        'path' => storage_path('logs/shell-gate-audit.log'),
         'level' => 'info',
         'days' => 90,  // Retention period
         'permission' => 0600,

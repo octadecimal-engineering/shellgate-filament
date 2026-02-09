@@ -12,7 +12,6 @@ Complete reference for all configuration options in Shell Gate.
 4. [Gateway Configuration](#gateway-configuration)
 5. [UI Customization](#ui-customization)
 6. [Security Settings](#security-settings)
-7. [Multi-tenancy](#multi-tenancy)
 
 ---
 
@@ -31,26 +30,36 @@ return [
     | License Configuration
     |--------------------------------------------------------------------------
     |
-    | Shell Gate uses Anystack for license verification at runtime.
-    | Purchase via Anystack: https://anystack.sh
+    | Shell Gate uses Anystack for license verification.
     |
-    | Verification is cached for 24 hours and skipped in local/testing.
+    | REQUIRED for production:
+    | 1. SHELL_GATE_LICENSE_KEY - Your license key (from purchase confirmation)
+    | 2. ANYSTACK_CUSTOMER_API_KEY - Runtime API key (from installation docs)
+    |
+    | The runtime API key has minimal permissions (validate/activate only)
+    | and is safe to use in your application.
+    |
+    | Purchase via Anystack: https://anystack.sh
+    | License types: Single Site ($99), Unlimited ($299), Agency ($499)
     |
     */
     'license' => [
-        // Your license key (required for production)
-        'key' => env('SHELL_GATE_LICENSE_KEY'),
+        // Your license key from purchase confirmation (required for production)
+        // Accepted env vars: SHELL_GATE_LICENSE_KEY, shellgate-license-key
+        'key' => env('SHELL_GATE_LICENSE_KEY') ?? env('shellgate-license-key'),
 
-        // Enable/disable license verification
-        // Auto-disabled in local and testing environments
+        // Enable/disable license verification (auto-disabled in local/testing)
         'verify' => env('SHELL_GATE_LICENSE_VERIFY', true),
 
         // Anystack runtime API configuration
         'anystack' => [
-            // Customer runtime API key (minimal permissions: validate/activate)
-            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY'),
+            // Customer runtime API key (license:validate, license:activate only)
+            // Accepted env vars: ANYSTACK_CUSTOMER_API_KEY, shellgate-customer-runtime-api-key, anystack-api-key
+            'api_key' => env('ANYSTACK_CUSTOMER_API_KEY')
+                ?? env('shellgate-customer-runtime-api-key')
+                ?? env('anystack-api-key'),
 
-            // Product ID (public, hardcoded)
+            // Product ID (public, safe to hardcode)
             'product_id' => 'a108fd3f-8389-40f5-beac-a1767ba70724',
         ],
     ],
@@ -60,135 +69,117 @@ return [
     | Gateway Configuration
     |--------------------------------------------------------------------------
     |
-    | Settings for the Terminal Gateway WebSocket server.
+    | Configuration for the terminal WebSocket gateway. The gateway is a Node.js
+    | server that handles PTY sessions over WebSocket.
     |
     */
     'gateway' => [
-        // WebSocket URL for browser connections (wss:// in production)
+        // WebSocket gateway URL visible to the browser
         'url' => env('SHELL_GATE_GATEWAY_URL', 'ws://localhost:7681'),
-        
-        // Gateway host and port (for local gateway process)
+
+        // Host and port the gateway listens on (for server configuration)
         'host' => env('SHELL_GATE_GATEWAY_HOST', '127.0.0.1'),
         'port' => env('SHELL_GATE_GATEWAY_PORT', 7681),
-        
+
         // Health check endpoint
-        'health_endpoint' => '/health',
+        'health_path' => '/health',
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication
+    | Authentication Configuration
     |--------------------------------------------------------------------------
     |
-    | JWT token and session authentication settings.
+    | JWT authentication configuration for terminal sessions.
     |
     */
     'auth' => [
-        // JWT secret key (defaults to APP_KEY)
+        // JWT secret (defaults to APP_KEY)
         'jwt_secret' => env('SHELL_GATE_JWT_SECRET'),
-        
-        // Token time-to-live in seconds (default: 5 minutes)
+
+        // Token TTL in seconds (default 5 minutes)
         'token_ttl' => env('SHELL_GATE_TOKEN_TTL', 300),
-        
+
         // Bind token to client IP address
         'bind_ip' => env('SHELL_GATE_BIND_IP', true),
-        
-        // Bind token to user agent
-        'bind_user_agent' => env('SHELL_GATE_BIND_UA', true),
-        
-        // JWT algorithm
-        'algorithm' => 'HS256',
+
+        // Bind token to client User-Agent
+        'bind_user_agent' => env('SHELL_GATE_BIND_USER_AGENT', true),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Terminal Settings
+    | Terminal Configuration
     |--------------------------------------------------------------------------
     |
-    | Shell and PTY configuration.
+    | Shell and PTY environment settings.
     |
     */
     'terminal' => [
-        // Shell to spawn (bash, zsh, sh)
+        // Shell to execute
         'shell' => env('SHELL_GATE_SHELL', '/bin/bash'),
-        
-        // Working directory for new sessions
-        'cwd' => env('SHELL_GATE_CWD', base_path()),
-        
-        // Environment variables to pass to shell
+
+        // Working directory (null = user home)
+        'cwd' => env('SHELL_GATE_CWD'),
+
+        // Environment variables passed to shell
         'env' => [
             'TERM' => 'xterm-256color',
+            'COLORTERM' => 'truecolor',
             'LANG' => 'en_US.UTF-8',
-            'LC_ALL' => 'en_US.UTF-8',
         ],
-        
-        // Additional environment from .env (comma-separated keys)
-        'pass_env' => env('SHELL_GATE_PASS_ENV', ''),
-        
-        // Default terminal dimensions
-        'cols' => 80,
-        'rows' => 24,
-        
-        // System user to run shell as (null = same as gateway)
-        'user' => env('SHELL_GATE_USER'),
-        
-        // Chroot path (null = no chroot)
-        'chroot' => env('SHELL_GATE_CHROOT'),
+
+        // Default terminal dimensions (columns x rows)
+        'cols' => env('SHELL_GATE_COLS', 120),
+        'rows' => env('SHELL_GATE_ROWS', 30),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Rate Limiting
+    | Limits Configuration
     |--------------------------------------------------------------------------
     |
-    | Limits to prevent abuse.
+    | Security limits for terminal sessions.
     |
     */
     'limits' => [
-        // Maximum concurrent sessions per user (default: 10)
+        // Maximum concurrent sessions per user
         'max_sessions_per_user' => env('SHELL_GATE_MAX_SESSIONS', 10),
-        
-        // Maximum total concurrent sessions
-        'max_total_sessions' => env('SHELL_GATE_MAX_SESSIONS_TOTAL', 50),
-        
-        // Token requests per minute per user
-        'token_requests_per_minute' => 5,
-        
-        // Maximum connections per IP
-        'max_connections_per_ip' => 3,
-        
-        // Session timeout in seconds (0 = no timeout)
-        'session_timeout' => env('SHELL_GATE_SESSION_TIMEOUT', 3600),
-        
-        // Idle timeout in seconds (0 = no timeout)
-        'idle_timeout' => env('SHELL_GATE_IDLE_TIMEOUT', 900),
+
+        // Maximum session idle time (seconds, 0 = no limit)
+        'idle_timeout' => env('SHELL_GATE_IDLE_TIMEOUT', 1800),
+
+        // Maximum session duration (seconds, 0 = no limit)
+        'session_timeout' => env('SHELL_GATE_SESSION_TIMEOUT', 0),
+
+        // Token rate limiting (requests per minute per user)
+        'token_rate_limit' => env('SHELL_GATE_TOKEN_RATE_LIMIT', 5),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Audit Logging
+    | Audit Configuration
     |--------------------------------------------------------------------------
     |
-    | Session and command logging settings.
+    | Logging and audit configuration for terminal sessions.
     |
     */
     'audit' => [
         // Enable audit logging
         'enabled' => env('SHELL_GATE_AUDIT_ENABLED', true),
-        
-        // Log channel name
-        'channel' => env('SHELL_GATE_AUDIT_CHANNEL', 'terminal-audit'),
-        
-        // Log all commands (high volume, security sensitive)
+
+        // Laravel log channel (can create a dedicated channel)
+        'channel' => env('SHELL_GATE_AUDIT_CHANNEL', 'shell-gate-audit'),
+
+        // Log commands (requires gateway callback)
         'log_commands' => env('SHELL_GATE_LOG_COMMANDS', false),
-        
-        // Log terminal output (very high volume)
-        'log_output' => env('SHELL_GATE_LOG_OUTPUT', false),
-        
-        // Patterns to redact from logs
+
+        // Patterns for redaction (e.g., passwords, tokens)
         'redact_patterns' => [
-            '/(password|secret|token|key|api_key|apikey)=[^\s]+/i',
-            '/Bearer\s+[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+/i',
+            '/password\s*[=:]\s*\S+/i',
+            '/token\s*[=:]\s*\S+/i',
+            '/secret\s*[=:]\s*\S+/i',
+            '/api[_-]?key\s*[=:]\s*\S+/i',
         ],
     ],
 
@@ -197,54 +188,28 @@ return [
     | UI Configuration
     |--------------------------------------------------------------------------
     |
-    | Terminal appearance and behavior in Filament.
+    | Terminal appearance configuration in the browser.
     |
     */
     'ui' => [
-        // Terminal font family
-        'font_family' => "'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace",
-        
-        // Font size in pixels
-        'font_size' => 14,
-        
-        // Line height multiplier
-        'line_height' => 1.2,
-        
-        // Cursor style: 'block', 'underline', 'bar'
-        'cursor_style' => 'block',
-        
-        // Cursor blink
-        'cursor_blink' => true,
-        
-        // Terminal height in viewport units or pixels
-        'height' => '70vh',
-        
-        // Enable WebGL renderer (better performance)
-        'use_webgl' => true,
-        
-        // Theme (see UI Customization section)
-        'theme' => [
-            'background' => '#0d0d0d',
-            'foreground' => '#d4d4d4',
-            'cursor' => '#d4d4d4',
-            'cursorAccent' => '#0d0d0d',
-            'selection' => 'rgba(255, 255, 255, 0.3)',
-            'black' => '#000000',
-            'red' => '#cd3131',
-            'green' => '#0dbc79',
-            'yellow' => '#e5e510',
-            'blue' => '#2472c8',
-            'magenta' => '#bc3fbc',
-            'cyan' => '#11a8cd',
-            'white' => '#e5e5e5',
-            'brightBlack' => '#666666',
-            'brightRed' => '#f14c4c',
-            'brightGreen' => '#23d18b',
-            'brightYellow' => '#f5f543',
-            'brightBlue' => '#3b8eea',
-            'brightMagenta' => '#d670d6',
-            'brightCyan' => '#29b8db',
-            'brightWhite' => '#ffffff',
+        // Font size (px)
+        'font_size' => env('SHELL_GATE_FONT_SIZE', 14),
+
+        // Font family
+        'font_family' => env('SHELL_GATE_FONT_FAMILY', 'JetBrains Mono, Menlo, Monaco, monospace'),
+
+        // Terminal container height
+        'height' => env('SHELL_GATE_HEIGHT', '600px'),
+
+        // Color theme (dark/light or custom)
+        'theme' => env('SHELL_GATE_THEME', 'dark'),
+
+        // Colors (if theme = custom)
+        'colors' => [
+            'background' => '#1e1e2e',
+            'foreground' => '#cdd6f4',
+            'cursor' => '#f5e0dc',
+            'selection' => '#45475a',
         ],
     ],
 
@@ -253,27 +218,27 @@ return [
     | Filament Integration
     |--------------------------------------------------------------------------
     |
-    | Navigation and panel settings.
+    | Configuration for Filament panel integration.
     |
     */
     'filament' => [
-        // Navigation group
-        'navigation_group' => 'System',
-        
-        // Navigation label
-        'navigation_label' => 'Terminal',
-        
+        // Terminal page path (relative to panel)
+        'path' => 'terminal',
+
+        // Navigation group (null = no grouping)
+        'navigation_group' => env('SHELL_GATE_NAV_GROUP', 'System'),
+
+        // Navigation label (shown in sidebar and as page title inside the terminal)
+        'navigation_label' => env('SHELL_GATE_NAV_LABEL', 'ShellGate'),
+
         // Navigation icon
         'navigation_icon' => 'heroicon-o-command-line',
-        
+
         // Navigation sort order
-        'navigation_sort' => 100,
-        
-        // Page title
-        'page_title' => 'Web Terminal',
-        
-        // Show in navigation (can be controlled dynamically)
-        'show_in_navigation' => true,
+        'navigation_sort' => env('SHELL_GATE_NAV_SORT', 100),
+
+        // Hide from navigation (page accessible directly via URL)
+        'hide_from_navigation' => env('SHELL_GATE_HIDE_NAV', false),
     ],
 ];
 ```
@@ -299,27 +264,46 @@ SHELL_GATE_GATEWAY_PORT=7681
 SHELL_GATE_JWT_SECRET=          # Defaults to APP_KEY
 SHELL_GATE_TOKEN_TTL=300        # 5 minutes
 SHELL_GATE_BIND_IP=true
-SHELL_GATE_BIND_UA=true
+SHELL_GATE_BIND_USER_AGENT=true
 
 # Terminal
 SHELL_GATE_SHELL=/bin/bash
 SHELL_GATE_CWD=/var/www/app
-SHELL_GATE_USER=                # Run as specific user
-SHELL_GATE_CHROOT=              # Chroot path
-SHELL_GATE_PASS_ENV=            # Additional env vars
+SHELL_GATE_COLS=120             # Terminal columns
+SHELL_GATE_ROWS=30              # Terminal rows
 
 # Limits
-SHELL_GATE_MAX_SESSIONS_USER=2
-SHELL_GATE_MAX_SESSIONS_TOTAL=50
-SHELL_GATE_SESSION_TIMEOUT=3600
-SHELL_GATE_IDLE_TIMEOUT=900
+SHELL_GATE_MAX_SESSIONS=10     # Per user
+SHELL_GATE_IDLE_TIMEOUT=1800   # 30 minutes
+SHELL_GATE_SESSION_TIMEOUT=0   # No limit (0)
+SHELL_GATE_TOKEN_RATE_LIMIT=5  # Requests per minute
 
 # Audit
 SHELL_GATE_AUDIT_ENABLED=true
-SHELL_GATE_AUDIT_CHANNEL=terminal-audit
+SHELL_GATE_AUDIT_CHANNEL=shell-gate-audit
 SHELL_GATE_LOG_COMMANDS=false
-SHELL_GATE_LOG_OUTPUT=false
+
+# UI
+SHELL_GATE_FONT_SIZE=14
+SHELL_GATE_FONT_FAMILY="JetBrains Mono, Menlo, Monaco, monospace"
+SHELL_GATE_HEIGHT=600px
+SHELL_GATE_THEME=dark
+
+# Filament Navigation
+SHELL_GATE_NAV_GROUP=System
+SHELL_GATE_NAV_LABEL=ShellGate
+SHELL_GATE_NAV_SORT=100
+SHELL_GATE_HIDE_NAV=false
 ```
+
+### Alternative Env Var Names
+
+For convenience, the following alternative env var names are also accepted:
+
+| Standard | Alternative |
+|----------|-------------|
+| `SHELL_GATE_LICENSE_KEY` | `shellgate-license-key` |
+| `ANYSTACK_CUSTOMER_API_KEY` | `shellgate-customer-runtime-api-key` or `anystack-api-key` |
 
 ---
 
@@ -332,43 +316,21 @@ use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 ->plugin(
     ShellGatePlugin::make()
-    
+
         // Authorization callback
         ->authorize(fn () => auth()->user()?->is_super_admin)
-        
-        // Or use a gate
-        ->authorizeUsing('access-terminal')
-        
+
         // Navigation settings
         ->navigationGroup('System')
         ->navigationLabel('Terminal')
         ->navigationIcon('heroicon-o-command-line')
         ->navigationSort(100)
-        
+
         // Override gateway URL
         ->gatewayUrl('wss://custom-domain.com/ws/terminal')
-        
-        // Custom working directory
-        ->workingDirectory('/var/www/custom')
-        
-        // UI customization
-        ->fontSize(16)
-        ->fontFamily('JetBrains Mono, monospace')
-        ->height('80vh')
-        
-        // Disable WebGL for compatibility
-        ->useWebgl(false)
-        
-        // Custom theme
-        ->theme([
-            'background' => '#1e1e1e',
-            'foreground' => '#cccccc',
-        ])
-        
-        // Session limits
-        ->maxSessionsPerUser(1)
-        ->sessionTimeout(1800)
-        ->idleTimeout(600)
+
+        // Hide from navigation (still accessible via direct URL)
+        ->hideFromNavigation()
 )
 ```
 
@@ -376,22 +338,22 @@ use OctadecimalHQ\ShellGate\ShellGatePlugin;
 
 | Method | Type | Description |
 |--------|------|-------------|
-| `authorize(Closure $callback)` | Closure | Authorization check |
-| `authorizeUsing(string $gate)` | string | Use Laravel Gate |
-| `navigationGroup(string $group)` | string | Filament nav group |
-| `navigationLabel(string $label)` | string | Nav menu label |
-| `navigationIcon(string $icon)` | string | Heroicon name |
-| `navigationSort(int $sort)` | int | Sort order |
-| `gatewayUrl(string $url)` | string | WebSocket URL |
-| `workingDirectory(string $path)` | string | Shell CWD |
-| `fontSize(int $size)` | int | Font size in px |
-| `fontFamily(string $font)` | string | CSS font-family |
-| `height(string $height)` | string | CSS height |
-| `useWebgl(bool $use)` | bool | Enable WebGL |
-| `theme(array $colors)` | array | xterm.js theme |
-| `maxSessionsPerUser(int $max)` | int | Per-user limit |
-| `sessionTimeout(int $seconds)` | int | Max session length |
-| `idleTimeout(int $seconds)` | int | Idle disconnect |
+| `authorize(Closure\|bool\|null $callback)` | Closure/bool | Authorization check |
+| `navigationGroup(?string $group)` | string | Filament nav group |
+| `navigationLabel(?string $label)` | string | Nav menu label |
+| `navigationIcon(?string $icon)` | string | Heroicon name |
+| `navigationSort(?int $sort)` | int | Sort order |
+| `gatewayUrl(?string $url)` | string | WebSocket URL |
+| `hideFromNavigation(bool $hide = true)` | bool | Hide from sidebar |
+
+### Default Authorization
+
+When no `->authorize()` callback is set:
+
+| Environment | Behavior |
+|-------------|----------|
+| `local` / `testing` | Any authenticated user has access |
+| `production` | Requires `is_super_admin` attribute or Spatie `super_admin` role |
 
 ---
 
@@ -413,7 +375,6 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 # Terminal
 TERMINAL_SHELL=/bin/bash
 TERMINAL_CWD=/var/www/app
-TERMINAL_USER=                    # Optional: run as user
 TERMINAL_ENV=TERM=xterm-256color,LANG=en_US.UTF-8
 
 # Limits
@@ -427,143 +388,40 @@ AUDIT_LOG_PATH=/var/log/terminal-audit.log
 LOG_COMMANDS=false
 ```
 
-### Gateway Configuration File
-
-Alternatively, create `gateway.config.js`:
-
-```javascript
-module.exports = {
-    server: {
-        port: process.env.PORT || 7681,
-        host: process.env.HOST || '0.0.0.0',
-    },
-    
-    security: {
-        jwtSecret: process.env.JWT_SECRET,
-        allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(','),
-        validateOnline: false,  // Call Laravel to validate token
-        laravelValidateUrl: 'http://localhost/api/terminal/validate',
-    },
-    
-    terminal: {
-        shell: process.env.TERMINAL_SHELL || '/bin/bash',
-        cwd: process.env.TERMINAL_CWD || process.cwd(),
-        user: process.env.TERMINAL_USER || null,
-        env: {
-            TERM: 'xterm-256color',
-            LANG: 'en_US.UTF-8',
-            ...parseEnv(process.env.TERMINAL_ENV),
-        },
-    },
-    
-    limits: {
-        maxSessions: parseInt(process.env.MAX_SESSIONS) || 50,
-        sessionTimeout: parseInt(process.env.SESSION_TIMEOUT) || 3600,
-        idleTimeout: parseInt(process.env.IDLE_TIMEOUT) || 900,
-    },
-    
-    logging: {
-        level: process.env.LOG_LEVEL || 'info',
-        auditPath: process.env.AUDIT_LOG_PATH,
-        logCommands: process.env.LOG_COMMANDS === 'true',
-    },
-};
-
-function parseEnv(str) {
-    if (!str) return {};
-    return str.split(',').reduce((acc, pair) => {
-        const [key, value] = pair.split('=');
-        if (key) acc[key] = value || '';
-        return acc;
-    }, {});
-}
-```
-
 ---
 
 ## UI Customization
 
-### Theme Presets
+### Theme
+
+The `theme` config option accepts a string preset name:
 
 ```php
 // config/shell-gate.php
-
 'ui' => [
-    // Dark theme (default)
-    'theme' => 'dark',
-    
-    // Or use preset name
+    'theme' => 'dark',   // default
     // 'theme' => 'light',
-    // 'theme' => 'dracula',
-    // 'theme' => 'solarized-dark',
-    // 'theme' => 'monokai',
 ],
 ```
 
-### Custom Theme
+Or set `theme` to `custom` and define colors:
 
 ```php
 'ui' => [
-    'theme' => [
-        'background' => '#282a36',      // Dracula background
+    'theme' => 'custom',
+    'colors' => [
+        'background' => '#282a36',
         'foreground' => '#f8f8f2',
         'cursor' => '#f8f8f2',
-        'cursorAccent' => '#282a36',
         'selection' => 'rgba(68, 71, 90, 0.5)',
-        
-        // ANSI colors
-        'black' => '#21222c',
-        'red' => '#ff5555',
-        'green' => '#50fa7b',
-        'yellow' => '#f1fa8c',
-        'blue' => '#bd93f9',
-        'magenta' => '#ff79c6',
-        'cyan' => '#8be9fd',
-        'white' => '#f8f8f2',
-        
-        // Bright variants
-        'brightBlack' => '#6272a4',
-        'brightRed' => '#ff6e6e',
-        'brightGreen' => '#69ff94',
-        'brightYellow' => '#ffffa5',
-        'brightBlue' => '#d6acff',
-        'brightMagenta' => '#ff92df',
-        'brightCyan' => '#a4ffff',
-        'brightWhite' => '#ffffff',
     ],
 ],
-```
-
-### Filament Dark Mode Integration
-
-The terminal automatically adapts to Filament's dark mode:
-
-```php
-// In plugin registration
-->theme([
-    'background' => 'var(--terminal-bg, #0d0d0d)',
-    'foreground' => 'var(--terminal-fg, #d4d4d4)',
-])
-```
-
-```css
-/* resources/css/terminal.css */
-:root {
-    --terminal-bg: #ffffff;
-    --terminal-fg: #1f2937;
-}
-
-.dark {
-    --terminal-bg: #0d0d0d;
-    --terminal-fg: #d4d4d4;
-}
 ```
 
 ### Custom Fonts
 
 ```php
 'ui' => [
-    // Use web font
     'font_family' => "'Fira Code', 'JetBrains Mono', monospace",
     'font_size' => 14,
 ],
@@ -621,7 +479,7 @@ module.exports = {
             /^cat\b/,
             /^grep\b/,
         ],
-        
+
         // Command blacklist (checked first)
         blockedCommands: [
             /rm\s+-rf\s+\//,
@@ -630,63 +488,6 @@ module.exports = {
             />\/dev\//,
         ],
     },
-};
-```
-
----
-
-## Multi-tenancy
-
-### Per-Tenant Configuration
-
-```php
-// In AdminPanelProvider
-->plugin(
-    ShellGatePlugin::make()
-        ->authorize(function () {
-            $user = auth()->user();
-            $tenant = filament()->getTenant();
-            
-            // Check tenant-specific permission
-            return $user->can('access-terminal', $tenant);
-        })
-        ->workingDirectory(function () {
-            $tenant = filament()->getTenant();
-            return "/var/www/tenants/{$tenant->id}";
-        })
-)
-```
-
-### Tenant Isolation
-
-```php
-// config/shell-gate.php
-'terminal' => [
-    'cwd' => function () {
-        if ($tenant = filament()->getTenant()) {
-            return "/var/www/tenants/{$tenant->id}";
-        }
-        return base_path();
-    },
-    
-    'env' => function () {
-        $tenant = filament()->getTenant();
-        return [
-            'TERM' => 'xterm-256color',
-            'TENANT_ID' => $tenant?->id,
-        ];
-    },
-],
-```
-
-### Gateway Multi-tenant Support
-
-```javascript
-// Pass tenant info in JWT
-const payload = {
-    user_id: user.id,
-    tenant_id: tenant?.id,
-    cwd: tenant ? `/var/www/tenants/${tenant.id}` : '/var/www/app',
 };
 ```
 
