@@ -63,11 +63,7 @@ class TerminalPage extends Page
      */
     public static function getNavigationIcon(): ?string
     {
-        try {
-            return ShellGatePlugin::get()->getNavigationIcon();
-        } catch (\Exception) {
-            return config('shell-gate.filament.navigation_icon', 'heroicon-o-command-line');
-        }
+        return 'shellgate-gear';
     }
 
     /**
@@ -176,6 +172,11 @@ class TerminalPage extends Page
      */
     protected function getViewData(): array
     {
+        // Close stale sessions before opening a new one
+        \OctadecimalHQ\ShellGate\Models\TerminalSession::active()
+            ->get()
+            ->each(fn ($session) => $session->end('page-reload'));
+
         return [
             'gatewayUrl' => $this->getGatewayUrl(),
             'tokenEndpoint' => $this->getTokenEndpoint(),

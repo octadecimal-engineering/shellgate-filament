@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-02-10
+
+### Added
+
+- macOS-style terminal window frame with title bar, traffic light dots, and gear icon
+- Animated connecting overlay with spinner
+- Integrated status bar with connection state and session ID
+- Resize handle for adjustable terminal height
+- Custom ShellGate gear SVG icon for Filament navigation (registered as Blade Icon set)
+- Stale session cleanup on page load (auto-closes active sessions on reload)
+- Prompt customization and screen clear on WebSocket connect
+
+### Changed
+
+- Complete terminal UI redesign: window frame, title bar, status bar, error banner
+- Navigation icon now uses custom `shellgate-gear` Blade Icon instead of heroicon
+- Filament page header hidden for immersive terminal experience
+
 ## [1.0.0] - 2026-02-09
 
 ### Added
@@ -60,5 +78,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License validation for production use
 - Installer does not modify user permissions; access via `->authorize()` or default checks
 
-[Unreleased]: https://github.com/octadecimalhq/shellgate/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/octadecimalhq/shellgate/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/octadecimalhq/shellgate/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/octadecimalhq/shellgate/releases/tag/v1.0.0
