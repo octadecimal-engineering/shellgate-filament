@@ -59,6 +59,14 @@ class ShellGateServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'shell-gate');
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
 
+        // Register custom Blade Icons (gear icon for Filament navigation)
+        $this->callAfterResolving(\BladeUI\Icons\Factory::class, function (\BladeUI\Icons\Factory $factory) {
+            $factory->add('shellgate', [
+                'path' => __DIR__ . '/../resources/svg',
+                'prefix' => 'shellgate',
+            ]);
+        });
+
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
             $this->commands([
